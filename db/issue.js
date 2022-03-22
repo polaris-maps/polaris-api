@@ -25,4 +25,4 @@ let Issue = new Schema({
 }, {
     collection: 'issues'
 })
-module.exports = mongoose.model('issue', Issue)
+module.exports = mongoose.model('issue', Issue);

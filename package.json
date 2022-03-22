@@ -9,9 +9,12 @@
   "author": "Christine Mendoza",
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "body-parser": "^1.19.2",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
-    "mongodb": "^4.4.0"
+    "mongodb": "^4.4.0",
+    "mongoose": "^6.2.7",
+    "nodemon": "^2.0.15"
   }
 }

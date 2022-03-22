@@ -6,12 +6,7 @@ const express = require("express");
 const issueRoutes = express.Router();
 
 // This will help us connect to the database
-const dbo = require("../db/conn");
 let Issue = require("../db/issue");
-
-// This helps convert the id from string to ObjectId for the _id.
-const ObjectId = require("mongodb").ObjectId;
-
 
 // Get a list of all the issues.
 issueRoutes.route("/app/issues").get(function (req, res) {

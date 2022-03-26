@@ -5,7 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const issueRoutes = require("./routes/issue")
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 const app = express();
 
 require("dotenv").config({ path: "./config.env" });
@@ -29,7 +29,7 @@ app.use(
 app.use(cors());
 
 // Static directory path
-app.use(express.static(path.join(__dirname, 'dist/polaris')))
+app.use(express.static(path.join(__dirname, 'dist/polaris'))) // TODO: fix
 
 // API root
 app.use('/app', issueRoutes)
@@ -42,11 +42,6 @@ app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });
 
-// 404 Handler
-app.use((req, res, next) => {
-  next(createError(404))
-})
-
 // Base Route
 app.get('/', (req, res) => {
   res.send('invalid endpoint')
@@ -57,6 +52,12 @@ app.get('*', (req, res) => {
       path.join(__dirname, 'dist/polaris/index.html'),
   )
 })
+
+//// Default response for any request not addressed by the defined endpoints ////
+app.use(function (req, res) {
+  res.json({ "message": "Endpoint not found. (404)" });
+  res.status(HTTP_STATUS_NOT_FOUND);
+});
 
 // error handler
 app.use(function (err, req, res, next) {

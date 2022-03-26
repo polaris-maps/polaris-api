@@ -32,7 +32,7 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'dist/polaris')))
 
 // API root
-app.use('/app/', issueRoutes)
+app.use('/app', issueRoutes)
 
 app.use(express.json());
 

@@ -9,7 +9,7 @@ const issueRoutes = express.Router();
 let Issue = require("../db/issue");
 
 // Get a list of all the issues.
-issueRoutes.route("issues").get(function (req, res) {
+issueRoutes.route("/app/issues").get(function (req, res) {
     Issue.find((error, data) => {
         if (error) {
             return next(error)
@@ -20,7 +20,7 @@ issueRoutes.route("issues").get(function (req, res) {
 });
 
 // Get a single issue by id
-issueRoutes.route("issue/:id").get(function (req, res) {
+issueRoutes.route("/app/issue/:id").get(function (req, res) {
     Issue.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)
@@ -31,7 +31,7 @@ issueRoutes.route("issue/:id").get(function (req, res) {
 });
 
 // Create a new issue.
-issueRoutes.route("issue/add").post(function (req, res, next) {
+issueRoutes.route("/app/issue/add").post(function (req, res, next) {
     Issue.create(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -42,7 +42,7 @@ issueRoutes.route("issue/add").post(function (req, res, next) {
 });
 
 // Update an issue by id.
-issueRoutes.route("update/:id").put(function (req, res, next) {
+issueRoutes.route("/app/update/:id").put(function (req, res, next) {
     Issue.findByIdAndUpdate(req.params.id, {
         $set: req.body
     }, (error, data) => {
@@ -57,7 +57,7 @@ issueRoutes.route("update/:id").put(function (req, res, next) {
 });
 
 // Delete an issue
-issueRoutes.route(":id").delete((req, res, next) => {
+issueRoutes.route("/app/:id").delete((req, res, next) => {
     Issue.findByIdAndRemove(req.params.id, (error, data) => {
         if (error) {
             return next(error);

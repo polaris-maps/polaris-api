@@ -4,7 +4,7 @@
   "description": "Polaris Maps backend",
   "main": "server.js",
   "scripts": {
-    "test": "node server.js"
+    "test": "nodemon server.js"
   },
   "author": "Christine Mendoza",
   "license": "GPL-3.0-or-later",

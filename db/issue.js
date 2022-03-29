@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-let Issue = new Schema({
+
+var Issue = new Schema({
     location: {
         type: String
+    },
+    latitude: {
+        type: Number
+    },
+    longitude: {
+        type: Number
     },
     description: {
         type: String
@@ -11,13 +18,13 @@ let Issue = new Schema({
         type: String
     },
     datetimeOpen: {
-        type: String
+        type: Number
     },
     datetimeClosed: {
-        type: String
+        type: Number
     },
     datetimePermanent: {
-        type: String
+        type: Number
     },
     votes: {
         type: Number
@@ -25,4 +32,5 @@ let Issue = new Schema({
 }, {
     collection: 'issues'
 })
-module.exports = mongoose.model('issue', Issue);
+
+module.exports = mongoose.model('issue', Issue)

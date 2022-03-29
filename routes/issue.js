@@ -9,7 +9,7 @@ const issueRoutes = express.Router();
 let Issue = require("../db/issue");
 
 // Get a list of all the issues.
-issueRoutes.route("/app/issue/all").get(function (req, res) {
+issueRoutes.route("/app/issue/all").get(function (req, res, next) {
     Issue.find((error, data) => {
         if (error) {
             return next(error)
@@ -20,7 +20,7 @@ issueRoutes.route("/app/issue/all").get(function (req, res) {
 });
 
 // Get a single issue by id
-issueRoutes.route("/app/issue/:id").get(function (req, res) {
+issueRoutes.route("/app/issue/:id").get(function (req, res, next) {
     Issue.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)

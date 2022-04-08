@@ -41,6 +41,8 @@ app.get("/app/", (req, res, next) => {
 });
 
 app.use(express.json());
+
+// TODO: add routes here
 app.use(issueRoutes);
  
 app.listen(port, () => {

@@ -9,7 +9,7 @@ var User = new Schema({
         type: String
     },
     favorites: {
-        type: String
+        type: [String]
     }
 }, {
     collection: 'users'

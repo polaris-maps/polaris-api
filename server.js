@@ -5,6 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const issueRoutes = require("./routes/issue")
+const userRoutes = require("./routes/user")
 const port = process.env.PORT || 5001;
 const app = express();
 
@@ -21,6 +22,7 @@ mongoose
     })
     .catch((err) => {
         console.error('Error connecting to mongo', err.reason)
+        console.error(err)
     })
 
 app.use(
@@ -44,6 +46,7 @@ app.use(express.json());
 
 // TODO: add routes here
 app.use(issueRoutes);
+app.use(userRoutes);
  
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);

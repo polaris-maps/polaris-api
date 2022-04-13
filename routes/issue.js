@@ -6,7 +6,7 @@ const express = require("express");
 const issueRoutes = express.Router();
 
 // This will help us connect to the database
-let Issue = require("../db/issue");
+let Issue = require("../connections/issue");
 
 // Get a list of all the issues.
 issueRoutes.route("/app/issue/all").get(function (req, res, next) {

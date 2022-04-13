@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-var Issue = new Schema({
+var issueSchema = new Schema({
     location: String,
     latitude: Number,
     longitude: Number,
@@ -15,4 +15,4 @@ var Issue = new Schema({
     collection: 'issues'
 })
 
-module.exports = mongoose.model('issue', Issue)
+module.exports = issueSchema

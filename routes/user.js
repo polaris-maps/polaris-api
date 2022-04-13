@@ -2,11 +2,11 @@ const express = require("express");
 
 // userRoutes is an instance of the express router.
 // We use it to define our routes.
-// The router will be added as a middleware and will take control of requests starting with path /issue.
+// The router will be added as a middleware and will take control of requests starting with path/user.
 const userRoutes = express.Router();
 
 // This will help us connect to the database
-let User = require("../db/user");
+let User = require("../connections/user");
 
 // Get a list of all the users.
 userRoutes.route("/app/user/all").get(function (req, res, next) {

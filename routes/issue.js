@@ -42,7 +42,7 @@ issueRoutes.route("/app/issue/add").post(function (req, res, next) {
 });
 
 // Update an issue by id.
-issueRoutes.route("/app/issue/update/:id").put(function (req, res, next) {
+issueRoutes.route("/app/issue/update/:id").patch(function (req, res, next) {
     Issue.findByIdAndUpdate(req.params.id, {
         $set: req.body
     }, (error, data) => {

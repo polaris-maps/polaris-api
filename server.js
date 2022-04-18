@@ -11,6 +11,7 @@ const userRoutes = require("./routes/user")
 const port = process.env.PORT || 5001;
 const app = express();
 
+const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_FOUND = 404;
 
 // TO-DO: Put logging middleware here (use process.env.ATLAS_URI_LOGS to connect)
@@ -42,7 +43,7 @@ app.use(cors());
 // Root endpoint
 app.get("/app/", (req, res, next) => {
   res.json({"message":"Your API works! (200)"});
-  res.status(200);
+  res.status(HTTP_STATUS_OK);
 });
 
 app.use(express.json());

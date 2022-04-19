@@ -41,6 +41,17 @@ buildingRoutes.route("/app/building/add").post(function (req, res, next) {
     })
 });
 
+// Create multiple new buildings.
+buildingRoutes.route("/app/building/add/multiple").post(function (req, res, next) {
+    building.insertMany(req.body, (error, data) => {
+        if (error) {
+            return next(error)
+        } else {
+            res.json(data)
+        }
+    })
+});
+
 // Update an building by id.
 buildingRoutes.route("/app/building/update/:id").patch(function (req, res, next) {
     building.findByIdAndUpdate(req.params.id, {

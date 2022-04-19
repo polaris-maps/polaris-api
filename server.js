@@ -8,7 +8,6 @@ dotEnv.config({ path: "./config.env" });
 
 const issueRoutes = require("./routes/issue")
 const userRoutes = require("./routes/user")
-const campusRoutes = require("./routes/campus")
 const buildingRoutes = require("./routes/building")
 const port = process.env.PORT || 5001;
 const app = express();
@@ -53,7 +52,6 @@ app.use(express.json());
 // TODO: add routes here
 app.use(issueRoutes);
 app.use(userRoutes);
-app.use(campusRoutes);
 app.use(buildingRoutes);
  
 app.listen(port, () => {

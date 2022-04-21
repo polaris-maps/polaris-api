@@ -19,7 +19,7 @@ userRoutes.route("/app/user/all").get(function (req, res, next) {
     })
 });
 
-// Get a single user by lastname
+// Get a single user by id
 userRoutes.route("/app/user/:id").get(function (req, res, next) {
     User.findById(req.params.id, (error, data) => {
         if (error) {
@@ -41,7 +41,7 @@ userRoutes.route("/app/user/add").post(function (req, res, next) {
     })
 });
 
-// Update a user by lastName.
+// Update a user by id.
 userRoutes.route("/app/user/update/:id").put(function (req, res, next) {
     User.findByIdAndUpdate(req.params.id, {
         $set: req.body

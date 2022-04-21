@@ -11,7 +11,6 @@ const userRoutes = require("./routes/user")
 const buildingRoutes = require("./routes/building")
 const port = process.env.PORT || 5001;
 const app = express();
-
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_FOUND = 404;
 

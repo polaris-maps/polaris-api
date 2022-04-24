@@ -4,7 +4,9 @@ const Schema = mongoose.Schema;
 var userSchema = new Schema({
     firstName: String,
     lastName: String,
-    favorites: [String]
+    favoriteLocations: [String],
+    issueInteractions: [String],
+    issuesCreated:[String]
 }, {
     collection: 'users'
 })

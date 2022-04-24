@@ -14,9 +14,6 @@ const app = express();
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_FOUND = 404;
 
-// TO-DO: Put logging middleware here (use process.env.ATLAS_URI_LOGS to connect)
-
-
 // default MongoDB connection; leave commented for now
 // const mongoose = require("mongoose");
 // mongoose
@@ -34,7 +31,12 @@ app.use(
       extended: false,
   }),
 );
+app.use(express.json());
 app.use(cors());
+
+// TO-DO: Put logging middleware here (use process.env.ATLAS_URI_LOGS to connect)
+
+
 
 // Static directory path
 // app.use(express.static(path.join(__dirname, 'dist/polaris'))) // TODO: fix
@@ -45,8 +47,6 @@ app.get("/app/", (req, res, next) => {
   res.json({"message":"Your API works! (200)"});
   res.status(HTTP_STATUS_OK);
 });
-
-app.use(express.json());
 
 // TODO: add routes here
 app.use(issueRoutes);

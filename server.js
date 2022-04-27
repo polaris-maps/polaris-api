@@ -25,6 +25,7 @@ app.use(
 app.use(express.json());
 app.use(cors());
 
+
 // Static directory path
 // app.use(express.static(path.join(__dirname, 'dist/polaris'))) // TODO: fix
 
@@ -34,6 +35,9 @@ app.get("/app/", (req, res, next) => {
   res.json({"message":"Your API works! (200)"});
   res.status(HTTP_STATUS_OK);
 });
+
+// Logger
+app.use(logger);
 
 // TODO: add routes here
 app.use(issueRoutes);
@@ -62,6 +66,3 @@ app.use(function (err, req, res, next) {
   if (!err.statusCode) err.statusCode = 500
   res.status(err.statusCode).send(err.message)
 })
-
-// Logger
-app.use(logger);

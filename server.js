@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
 
-const logger = require("./logger")
+const apiLogger = require("./logger")
 
 const issueRoutes = require("./routes/issue")
 const userRoutes = require("./routes/user")
@@ -37,7 +37,7 @@ app.get("/app/", (req, res, next) => {
 });
 
 // Logger
-app.use(logger);
+app.use(apiLogger);
 
 // TODO: add routes here
 app.use(issueRoutes);

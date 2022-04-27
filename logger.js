@@ -1,62 +1,41 @@
 const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
 
-// Taken with modification from:
-// https://stackoverflow.com/questions/13941957/unable-to-save-logs-to-mongodb-database-for-winston-nodejs
-// https://stackoverflow.com/questions/55606854/how-to-use-express-winston-and-winston-mongodb-together
-
-const { createLogger, format, transports } = require('winston');
+var winston = require('winston'),
+expressWinston = require('express-winston');
 require('winston-mongodb');  // expose `winston.transports.MongoDB`
 
-logger = createLogger({
+logger = expressWinston.logger({
     transports: [
-
-        // File transport
-        new transports.File({
+        // File transport; uncomment to debug
+        new winston.transports.File({
             filename: 'winstonLogs.log',
-            format: format.combine(
-                format.timestamp({ format: 'MMM-DD-YYYY HH:mm:ss' }),
-                format.align(),
-                format.printf(info => `${info.level}: ${[info.timestamp]}: ${info.message}`),
+            format: winston.format.combine(
+                winston.format.timestamp({ format: 'MMM-DD-YYYY HH:mm:ss' }),
+                winston.format.align(),
+                winston.format.printf(info => `${info.level}: ${[info.timestamp]}: ${info.message}`),
             )
         }),
-        new transports.MongoDB({
+        // MongoDB transport
+        new winston.transports.MongoDB({
             level: 'info',
             db: process.env.ATLAS_URI_LOGS,
             options: {
                 useUnifiedTopology: true,
             },
-            collection: 'server_logs',
-            format: format.combine(
-                format.timestamp(),
+            collection: 'access',
+            format: winston.format.combine(
+                winston.format.timestamp(),
                 //convert logs to a json format for mongodb
-                format.json()
+                winston.format.json()
             )
         })
-    ]
+    ],
+    meta: true, // optional: control whether you want to log the meta data about the request (default to true)
+    msg: "HTTP {{req.method}} {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+    expressFormat: true, // Use the default Express/morgan request formatting. Enabling this will override any msg if true. Will only output colors with colorize set to true
+    colorize: false, // Color the text and status code, using the Express/morgan color palette (text: gray, status: default green, 3XX cyan, 4XX yellow, 5XX red).
+    ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
 })
 
-function loggerFunction(req, res, next) {
-    let logdata = {
-        remoteaddr: req.ip ?? null,
-        remoteuser: req.user ?? null,
-        time: Date.now() ?? null,
-        method: req.method ?? null,
-        url: req.url ?? null,
-        protocol: req.protocol ?? null,
-        httpversion: req.httpVersion ?? null,
-        secure: req.secure.toString() ?? null, // TODO: is this ok?
-        status: res.statusCode ?? null,
-        referer: req.headers['referer'] ?? null,
-        useragent: req.headers['user-agent'] ?? null
-    }
-
-    // logger.log('info', logdata);
-    logger.log('info', logdata.toString());
-}
-
-// loggerFunction = function () {
-//     logger.log('info', "Running logs ");
-// }
-
-module.exports = loggerFunction;
+module.exports = logger

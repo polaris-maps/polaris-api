@@ -25,9 +25,6 @@ app.use(
 app.use(express.json());
 app.use(cors());
 
-// Logger
-app.use(logger)
-
 // Static directory path
 // app.use(express.static(path.join(__dirname, 'dist/polaris'))) // TODO: fix
 
@@ -54,7 +51,7 @@ app.listen(port, () => {
 // })
 
 //// Default response for any request not addressed by the defined endpoints ////
-app.use(function (req, res) {
+app.use(function (req, res, next) {
   res.json({ "message": "Endpoint not found. (404)" });
   res.status(HTTP_STATUS_NOT_FOUND);
 });
@@ -65,3 +62,6 @@ app.use(function (err, req, res, next) {
   if (!err.statusCode) err.statusCode = 500
   res.status(err.statusCode).send(err.message)
 })
+
+// Logger
+app.use(logger);

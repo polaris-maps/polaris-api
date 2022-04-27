@@ -1,6 +1,12 @@
 const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
 
+/* Sources: 
+* https://github.com/bithavoc/express-winston
+* https://stackoverflow.com/questions/55606854/how-to-use-express-winston-and-winston-mongodb-together
+* https://stackoverflow.com/questions/13941957/unable-to-save-logs-to-mongodb-database-for-winston-nodejs
+*/
+
 var winston = require('winston'),
 expressWinston = require('express-winston');
 require('winston-mongodb');  // expose `winston.transports.MongoDB`

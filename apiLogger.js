@@ -31,7 +31,7 @@ logger = expressWinston.logger({
             options: {
                 useUnifiedTopology: true,
             },
-            collection: 'access',
+            collection: 'api',
             format: winston.format.combine(
                 winston.format.timestamp(),
                 //convert logs to a json format for mongodb

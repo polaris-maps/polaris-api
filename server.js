@@ -6,11 +6,12 @@ const bodyParser = require("body-parser");
 const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
 
-const apiLogger = require("./logger")
+const apiLogger = require("./apiLogger")
 
 const issueRoutes = require("./routes/issue")
 const userRoutes = require("./routes/user")
 const buildingRoutes = require("./routes/building")
+const clientLogRoutes = require("./routes/clientLog")
 
 const port = process.env.PORT || 5001;
 const app = express();
@@ -47,13 +48,7 @@ app.use(apiLogger);
 app.use(issueRoutes);
 app.use(userRoutes);
 app.use(buildingRoutes);
-
-// test endpoint for logs to be sent to db
-app.post("/app/logs/", (req, res, next) => {
-  console.log(req.body)
-  res.json({"message":req.body});
-  res.status(HTTP_STATUS_OK);
-});
+app.use(clientLogRoutes);
 
 // app.get('*', (req, res) => {
 //   res.sendFile(

@@ -47,4 +47,6 @@ logger = expressWinston.logger({
     ignoreRoute: function (req, res) { return false; } // optional: allows to skip some log messages based on request and/or response
 })
 
+// TODO: Add error logger
+
 module.exports = logger

@@ -29,6 +29,10 @@ app.use(cors());
 // Static directory path
 // app.use(express.static(path.join(__dirname, 'dist/polaris'))) // TODO: fix
 
+app.listen(port, () => {
+  console.log(`Server is running on port: ${port}`);
+});
+
 //// API routes
 // Root endpoint
 app.get("/app/", (req, res, next) => {
@@ -43,9 +47,12 @@ app.use(apiLogger);
 app.use(issueRoutes);
 app.use(userRoutes);
 app.use(buildingRoutes);
- 
-app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
+
+// test endpoint for logs to be sent to db
+app.post("/app/logs/", (req, res, next) => {
+  console.log(req.body)
+  res.json({"message":req.body});
+  res.status(HTTP_STATUS_OK);
 });
 
 // app.get('*', (req, res) => {

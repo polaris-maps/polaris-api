@@ -11,6 +11,7 @@ const apiLogger = require("./apiLogger")
 const issueRoutes = require("./routes/issue")
 const userRoutes = require("./routes/user")
 const buildingRoutes = require("./routes/building")
+const apiLogRoutes = require("./routes/apiLog")
 const clientLogRoutes = require("./routes/clientLog")
 
 const port = process.env.PORT || 5001;
@@ -44,10 +45,11 @@ app.get("/app/", (req, res, next) => {
 // Logger
 app.use(apiLogger);
 
-// TODO: add routes here
+// Routes
 app.use(issueRoutes);
 app.use(userRoutes);
 app.use(buildingRoutes);
+app.use(apiLogRoutes);
 app.use(clientLogRoutes);
 
 // app.get('*', (req, res) => {

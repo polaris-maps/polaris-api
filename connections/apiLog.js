@@ -2,10 +2,10 @@ const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
 const mongoose = require("mongoose");
 
-const clientLogSchema = require("../schemas/clientLog")
+const apiLogSchema = require("../schemas/apiLog")
 
 var conn = mongoose.createConnection(process.env.ATLAS_URI_LOGS);
 
-var clientLogConnection = conn.model('clientLog', clientLogSchema);
+var apiLogConnection = conn.model('apiLog', apiLogSchema);
 
-module.exports = clientLogConnection
+module.exports = apiLogConnection

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-var clientLogRecordSchema = new Schema({
+var clientLogSchema = new Schema({
     level: Number,
     additional: [String],
     message: String,
@@ -14,4 +14,4 @@ var clientLogRecordSchema = new Schema({
     collection: 'client'
 })
 
-module.exports = clientLogRecordSchema
+module.exports = clientLogSchema

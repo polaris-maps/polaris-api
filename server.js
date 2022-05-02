@@ -31,10 +31,6 @@ app.use(cors());
 // Static directory path
 // app.use(express.static(path.join(__dirname, 'dist/polaris'))) // TODO: fix
 
-app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
-});
-
 //// API routes
 // Root endpoint
 app.get("/app/", (req, res, next) => {
@@ -70,3 +66,12 @@ app.use(function (err, req, res, next) {
   if (!err.statusCode) err.statusCode = 500
   res.status(err.statusCode).send(err.message)
 })
+
+// exit
+process.on('SIGINT', () => {
+  server.close();
+});
+
+const server = app.listen(port, () => {
+  console.log(`Server is running on port: ${port}`);
+});

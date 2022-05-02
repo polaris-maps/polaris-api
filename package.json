@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "(timeout --signal=SIGINT 15 node server.js --port=5001; exit 0) & sleep 5s && curl -s http://localhost:5001/app/ && sleep 5s",
-    "run": "nodemon server.js"
+    "run": "nodemon server.js",
+    "start": "nodemon server.js"
   },
   "author": "Team Polaris",
   "license": "GPL-3.0-or-later",

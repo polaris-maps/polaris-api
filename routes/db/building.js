@@ -6,7 +6,7 @@ const express = require("express");
 const buildingRoutes = express.Router();
 
 // This will help us connect to the database
-let building = require("../connections/building");
+let building = require("../../connections/building");
 
 // Get a list of all the buildings.
 buildingRoutes.route("/app/building/all").get(function (req, res, next) {

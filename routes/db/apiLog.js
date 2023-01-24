@@ -6,7 +6,7 @@ const express = require("express");
 const apiLogRoutes = express.Router();
 
 // This will help us connect to the database
-let ApiLog = require("../connections/apiLog");
+let ApiLog = require("../../connections/apiLog");
 
 // Get a list of all the api log records.
 apiLogRoutes.route("/app/apiLog/all").get(function (req, res, next) {

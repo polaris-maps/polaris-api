@@ -6,7 +6,7 @@ const express = require("express");
 const userRoutes = express.Router();
 
 // This will help us connect to the database
-let User = require("../connections/user");
+let User = require("../../connections/user");
 
 // Get a list of all the users.
 userRoutes.route("/app/user/all").get(function (req, res, next) {

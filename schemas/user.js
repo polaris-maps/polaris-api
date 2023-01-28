@@ -6,8 +6,8 @@ var userSchema = new Schema({
     lastName: String,
     email: String,
     favoriteLocations: [String],
-    issueInteractions: [String],
-    issuesCreated:[String]
+    indoorIssueInteractions: [String],
+    indoorIssuesCreated:[String]
 }, {
     collection: 'users'
 })

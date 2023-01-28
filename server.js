@@ -8,11 +8,11 @@ dotEnv.config({ path: "./config.env" });
 
 const apiLogger = require("./apiLogger")
 
-const issueRoutes = require("./routes/issue")
-const userRoutes = require("./routes/user")
-const buildingRoutes = require("./routes/building")
-const apiLogRoutes = require("./routes/apiLog")
-const clientLogRoutes = require("./routes/clientLog")
+const indoorIssueRoutes = require("./routes/db/indoorIssue")
+const userRoutes = require("./routes/db/user")
+const buildingRoutes = require("./routes/db/building")
+const apiLogRoutes = require("./routes/db/apiLog")
+const clientLogRoutes = require("./routes/db/clientLog")
 
 const port = process.env.PORT || 5001;
 const app = express();
@@ -42,7 +42,7 @@ app.get("/app/", (req, res, next) => {
 app.use(apiLogger);
 
 // Routes
-app.use(issueRoutes);
+app.use(indoorIssueRoutes);
 app.use(userRoutes);
 app.use(buildingRoutes);
 app.use(apiLogRoutes);

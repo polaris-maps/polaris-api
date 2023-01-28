@@ -2,10 +2,10 @@ const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
 const mongoose = require("mongoose");
 
-const issueSchema = require("../schemas/issue")
+const indoorIssueSchema = require("../schemas/indoorIssue")
 
 var conn = mongoose.createConnection(process.env.ATLAS_URI_ISSUES);
 
-var issueConnection = conn.model('issue', issueSchema);
+var indoorIssueConnection = conn.model('indoorIssue', indoorIssueSchema);
 
-module.exports = issueConnection
+module.exports = indoorIssueConnection

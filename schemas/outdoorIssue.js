@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-var indoorIssueSchema = new Schema({
-    location: String,
+var outdoorIssueSchema = new Schema({
+    avoidPolygon: [[Number]],
     description: String,
     status: String,
     datetimeOpen: Number,
@@ -10,7 +10,7 @@ var indoorIssueSchema = new Schema({
     datetimePermanent: Number,
     votes: [String]
 }, {
-    collection: 'indoorIssues'
+    collection: 'outdoorIssues'
 })
 
-module.exports = indoorIssueSchema
+module.exports = outdoorIssueSchema

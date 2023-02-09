@@ -13,8 +13,9 @@ const userRoutes = require("./routes/db/user")
 const buildingRoutes = require("./routes/db/building")
 const apiLogRoutes = require("./routes/db/apiLog")
 const clientLogRoutes = require("./routes/db/clientLog")
+const adaptiveNavRoutes = require("./routes/adaptiveNav")
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 5000;
 const app = express();
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_FOUND = 404;
@@ -47,6 +48,7 @@ app.use(userRoutes);
 app.use(buildingRoutes);
 app.use(apiLogRoutes);
 app.use(clientLogRoutes);
+app.use(adaptiveNavRoutes);
 
 // app.get('*', (req, res) => {
 //   res.sendFile(

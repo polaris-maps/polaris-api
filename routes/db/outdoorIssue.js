@@ -19,6 +19,17 @@ outdoorIssueRoutes.route("/app/outdoorIssue/all").get(function (req, res, next) 
     })
 });
 
+// (Added) Get a list of all the outdoorIssues of specific categories.
+outdoorIssueRoutes.route("/app/outdoorIssue/filtered").post(function (req, res, next) {
+    outdoorIssue.find({ "category": { $in: req.body.category } }, "avoidPolygon", (error, obstacleData) => {
+        if (error) {
+          return next(error)
+        } else {
+            res.json(data)
+        }
+    })
+});
+
 // Get a single outdoorIssue by id
 outdoorIssueRoutes.route("/app/outdoorIssue/:id").get(function (req, res, next) {
     outdoorIssue.findById(req.params.id, (error, data) => {

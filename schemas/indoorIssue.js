@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 var indoorIssueSchema = new Schema({
     location: String,
+    category: String,
     description: String,
     status: String,
     datetimeOpen: Number,

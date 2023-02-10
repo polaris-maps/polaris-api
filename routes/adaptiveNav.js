@@ -50,14 +50,24 @@ adaptiveNavRoutes.route("/app/test/route").get(function (req, res, next) {
     });
 });
 
-adaptiveNavRoutes.route("/app/test/route").get(function (req, res, next) {
+adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
+  data = {
+    coordinates: []
+  };
+  
   // Given a user profile, filter obstacle list.
+  profile = req.body.profile;
+  // indoor
+  // outdor
+
+  obstacleList = [];
+
   // Given obstacle list, start, and stop, return route.
   orsDirections.calculate({
     coordinates: [[8.690958, 49.404662], [8.687868, 49.390139]],
     profile: 'wheelchair',
     options: {
-      avoid_features: ["ferries", "steps"],
+      avoid_features: ["ferries", "steps"], // can you keep steps in with wheelchair profile?
       profile_params: {
         "restrictions": {
           "surface_type": "cobblestone:flattened",

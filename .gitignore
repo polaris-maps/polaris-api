@@ -1,6 +1,6 @@
 # Repository-specifc
 config.env
-workspace.*
+workspace*
 
 # Logs
 logs

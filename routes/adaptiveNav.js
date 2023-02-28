@@ -40,7 +40,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
               ]
             }
           },
-          format: 'json'
+          format: 'geojson'
         })
         .then(function (json) {
           // Add your own result handling here
@@ -80,7 +80,7 @@ adaptiveNavRoutes.route("/app/route/hardcodedtest").get(function (req, res, next
         ]
       }
     },
-    format: 'json'
+    format: 'geojson'
   })
     .then(function (json) {
       res.status(200).json(json);

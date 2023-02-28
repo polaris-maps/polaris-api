@@ -36,7 +36,10 @@ buildingRoutes.route("/app/building/add").post(function (req, res, next) {
         if (error) {
             return next(error)
         } else {
-            res.json(data)
+            res.status(200).json({
+                msg: "successfully added building",
+                data: data
+            })
         }
     })
 });
@@ -47,7 +50,10 @@ buildingRoutes.route("/app/building/add/multiple").post(function (req, res, next
         if (error) {
             return next(error)
         } else {
-            res.json(data)
+            res.status(200).json({
+                msg: "successfully added multiple buildings",
+                data: data
+            })
         }
     })
 });
@@ -61,8 +67,10 @@ buildingRoutes.route("/app/building/update/:id").patch(function (req, res, next)
             console.log(error);
             return next(error);
         } else {
-            res.json(data)
-            console.log('building updated successfully!')
+            res.status(200).json({
+                msg: "successfully updated building",
+                data: data
+            })
         }
     })
 });
@@ -74,7 +82,8 @@ buildingRoutes.route("/app/building/delete/:id").delete((req, res, next) => {
             return next(error);
         } else {
             res.status(200).json({
-                msg: data
+                msg: "successfully deleted building",
+                data: data
             })
         }
     })

@@ -19,6 +19,17 @@ indoorIssueRoutes.route("/app/indoorIssue/all").get(function (req, res, next) {
     })
 });
 
+// Get a list of all the indoorIssues of specific categories. // -
+indoorIssueRoutes.route("/app/outdoorIssue/filtered").post(function (req, res, next) {
+    indoorIssue.find({ "category": { $in: req.body.category } }, (error, obstacleData) => {
+        if (error) {
+            return next(error)
+        } else {
+            res.json(data)
+        }
+    })
+});
+
 // Get a single indoorIssue by id
 indoorIssueRoutes.route("/app/indoorIssue/:id").get(function (req, res, next) {
     IndoorIssue.findById(req.params.id, (error, data) => {
@@ -36,7 +47,10 @@ indoorIssueRoutes.route("/app/indoorIssue/add").post(function (req, res, next) {
         if (error) {
             return next(error)
         } else {
-            res.json(data)
+            res.status(200).json({
+                msg: "successfully added indoor issue",
+                data: data
+            })
         }
     })
 });
@@ -50,8 +64,10 @@ indoorIssueRoutes.route("/app/indoorIssue/update/:id").patch(function (req, res,
             console.log(error);
             return next(error);
         } else {
-            res.json(data)
-            console.log('Issue updated successfully!')
+            res.status(200).json({
+                msg: "successfully updated indoor issue",
+                data: data
+            })
         }
     })
 });
@@ -63,7 +79,8 @@ indoorIssueRoutes.route("/app/indoorIssue/delete/:id").delete((req, res, next) =
             return next(error);
         } else {
             res.status(200).json({
-                msg: data
+                msg: "successfully deleted indoor issue",
+                data: data
             })
         }
     })

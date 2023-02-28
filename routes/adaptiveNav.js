@@ -44,7 +44,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
         })
         .then(function (json) {
           // Add your own result handling here
-          res.json(JSON.stringify(json));
+          res.status(200).json(json);
         })
         .catch(function (err) {
           return next(err);
@@ -58,7 +58,7 @@ adaptiveNavRoutes.route("/app/route/hardcodedtest").get(function (req, res, next
     coordinates: [[8.690958, 49.404662], [8.687868, 49.390139]],
     profile: 'wheelchair',
     options: {
-      avoid_features: ["ferries", "steps"],
+      avoid_features: ["steps"],
       profile_params: {
         "restrictions": {
           "surface_type": "cobblestone:flattened",
@@ -83,8 +83,7 @@ adaptiveNavRoutes.route("/app/route/hardcodedtest").get(function (req, res, next
     format: 'json'
   })
     .then(function (json) {
-      // Add your own result handling here
-      res.json(JSON.stringify(json));
+      res.status(200).json(json);
     })
     .catch(function (err) {
       return next(err);

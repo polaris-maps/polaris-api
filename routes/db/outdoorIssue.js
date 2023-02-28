@@ -19,11 +19,11 @@ outdoorIssueRoutes.route("/app/outdoorIssue/all").get(function (req, res, next) 
     })
 });
 
-// (Added) Get a list of all the outdoorIssues of specific categories.
+// Get a list of all the outdoorIssues of specific categories.
 outdoorIssueRoutes.route("/app/outdoorIssue/filtered").post(function (req, res, next) {
-    outdoorIssue.find({ "category": { $in: req.body.category } }, "avoidPolygon", (error, obstacleData) => {
+    outdoorIssue.find({ "category": { $in: req.body.category } }, (error, obstacleData) => {
         if (error) {
-          return next(error)
+            return next(error)
         } else {
             res.json(data)
         }
@@ -47,7 +47,10 @@ outdoorIssueRoutes.route("/app/outdoorIssue/add").post(function (req, res, next)
         if (error) {
             return next(error)
         } else {
-            res.json(data)
+            res.status(200).json({
+                msg: "successfully added outdoor issue",
+                data: data
+            })
         }
     })
 });
@@ -61,8 +64,10 @@ outdoorIssueRoutes.route("/app/outdoorIssue/update/:id").patch(function (req, re
             console.log(error);
             return next(error);
         } else {
-            res.json(data)
-            console.log('Issue updated successfully!')
+            res.status(200).json({
+                msg: "successfully updated outdoor issue",
+                data: data
+            })
         }
     })
 });
@@ -74,7 +79,8 @@ outdoorIssueRoutes.route("/app/outdoorIssue/delete/:id").delete((req, res, next)
             return next(error);
         } else {
             res.status(200).json({
-                msg: data
+                msg: "successfully deleted outdoor issue",
+                data: data
             })
         }
     })

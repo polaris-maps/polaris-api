@@ -19,7 +19,7 @@ indoorIssueRoutes.route("/app/indoorIssue/all").get(function (req, res, next) {
     })
 });
 
-// Get a list of all the indoorIssues of specific categories. // -
+// Get a list of all the indoorIssues of specific categories.
 indoorIssueRoutes.route("/app/outdoorIssue/filtered").post(function (req, res, next) {
     indoorIssue.find({ "category": { $in: req.body.category } }, (error, obstacleData) => {
         if (error) {
@@ -48,7 +48,7 @@ indoorIssueRoutes.route("/app/indoorIssue/add").post(function (req, res, next) {
             return next(error)
         } else {
             res.status(200).json({
-                msg: "successfully added indoor issue",
+                message: "successfully added indoor issue",
                 data: data
             })
         }
@@ -64,7 +64,7 @@ indoorIssueRoutes.route("/app/indoorIssue/update/:id").patch(function (req, res,
             return next(error);
         } else {
             res.status(200).json({
-                msg: "successfully updated indoor issue",
+                message: "successfully updated indoor issue",
                 oldData: data
             })
         }
@@ -79,14 +79,14 @@ indoorIssueRoutes.route("/app/indoorIssue/delete/:id").delete((req, res, next) =
         } else {
             if (!data) {
                 res.status(404).json({
-                    msg: "indoor issue of that id was not found (404)",
+                    message: "indoor issue of that id was not found (404)",
                     id: req.params.id
                 })
                 return;
             }
 
             res.status(200).json({
-                msg: "successfully deleted indoor issue",
+                message: "successfully deleted indoor issue",
                 data: data
             })
         }

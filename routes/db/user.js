@@ -37,7 +37,7 @@ userRoutes.route("/app/user/add").post(function (req, res, next) {
             return next(error)
         } else {
             res.status(200).json({
-                msg: "successfully added user",
+                message: "successfully added user",
                 data: data
             })
         }
@@ -53,7 +53,7 @@ userRoutes.route("/app/user/update/:id").put(function (req, res, next) {
             return next(error);
         } else {
             res.status(200).json({
-                msg: "successfully updated user",
+                message: "successfully updated user",
                 oldData: data
             })
         }
@@ -68,14 +68,14 @@ userRoutes.route("/app/user/delete/:id").delete((req, res, next) => {
         } else {
             if (!data) {
                 res.status(404).json({
-                    msg: "user of that id was not found (404)",
+                    message: "user of that id was not found (404)",
                     id: req.params.id
                 })
                 return;
             }
 
             res.status(200).json({
-                msg: "successfully deleted user",
+                message: "successfully deleted user",
                 data: data
             })
         }

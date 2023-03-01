@@ -37,7 +37,7 @@ buildingRoutes.route("/app/building/add").post(function (req, res, next) {
             return next(error)
         } else {
             res.status(200).json({
-                msg: "successfully added building",
+                message: "successfully added building",
                 data: data
             })
         }
@@ -51,7 +51,7 @@ buildingRoutes.route("/app/building/add/multiple").post(function (req, res, next
             return next(error)
         } else {
             res.status(200).json({
-                msg: "successfully added multiple buildings",
+                message: "successfully added multiple buildings",
                 data: data
             })
         }
@@ -67,7 +67,7 @@ buildingRoutes.route("/app/building/update/:id").patch(function (req, res, next)
             return next(error);
         } else {
             res.status(200).json({
-                msg: "successfully updated building",
+                message: "successfully updated building",
                 oldData: data
             })
         }
@@ -82,14 +82,14 @@ buildingRoutes.route("/app/building/delete/:id").delete((req, res, next) => {
         } else {
             if (!data) {
                 res.status(404).json({
-                    msg: "building of that id was not found (404)",
+                    message: "building of that id was not found (404)",
                     id: req.params.id
                 })
                 return;
             }
 
             res.status(200).json({
-                msg: "successfully deleted building",
+                message: "successfully deleted building",
                 data: data
             })
         }

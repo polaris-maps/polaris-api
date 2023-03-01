@@ -48,7 +48,7 @@ outdoorIssueRoutes.route("/app/outdoorIssue/add").post(function (req, res, next)
             return next(error)
         } else {
             res.status(200).json({
-                msg: "successfully added outdoor issue",
+                message: "successfully added outdoor issue",
                 data: data
             })
         }
@@ -64,7 +64,7 @@ outdoorIssueRoutes.route("/app/outdoorIssue/update/:id").patch(function (req, re
             return next(error);
         } else {
             res.status(200).json({
-                msg: "successfully updated outdoor issue",
+                message: "successfully updated outdoor issue",
                 oldData: data
             })
         }
@@ -79,14 +79,14 @@ outdoorIssueRoutes.route("/app/outdoorIssue/delete/:id").delete((req, res, next)
         } else {
             if (!data) {
                 res.status(404).json({
-                    msg: "outdoor issue of that id was not found (404)",
+                    message: "outdoor issue of that id was not found (404)",
                     id: req.params.id
                 })
                 return;
             }
 
             res.status(200).json({
-                msg: "successfully deleted outdoor issue",
+                message: "successfully deleted outdoor issue",
                 data: data
             })
         }

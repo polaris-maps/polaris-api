@@ -37,7 +37,7 @@ clientLogRoutes.route("/app/clientLog/add").post(function (req, res, next) {
             return next(error)
         } else {
             res.status(200).json({
-                msg: "successfully added client log record",
+                message: "successfully added client log record",
                 data: data
             })
         }

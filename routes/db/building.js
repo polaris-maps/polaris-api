@@ -64,7 +64,6 @@ buildingRoutes.route("/app/building/update/:id").patch(function (req, res, next)
         $set: req.body
     }, (error, data) => {
         if (error) {
-            console.log(error);
             return next(error);
         } else {
             res.status(200).json({

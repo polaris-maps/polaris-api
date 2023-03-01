@@ -47,11 +47,9 @@ userRoutes.route("/app/user/update/:id").put(function (req, res, next) {
         $set: req.body
     }, (error, data) => {
         if (error) {
-            console.log(error);
             return next(error);
         } else {
             res.json(data)
-            console.log('User updated successfully!')
         }
     })
 });

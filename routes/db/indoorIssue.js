@@ -61,7 +61,6 @@ indoorIssueRoutes.route("/app/indoorIssue/update/:id").patch(function (req, res,
         $set: req.body
     }, (error, data) => {
         if (error) {
-            console.log(error);
             return next(error);
         } else {
             res.status(200).json({
@@ -78,6 +77,14 @@ indoorIssueRoutes.route("/app/indoorIssue/delete/:id").delete((req, res, next) =
         if (error) {
             return next(error);
         } else {
+            if (!data) {
+                res.status(404).json({
+                    msg: "indoor issue of that id was not found (404)",
+                    id: req.params.id
+                })
+                return;
+            }
+
             res.status(200).json({
                 msg: "successfully deleted indoor issue",
                 data: data

@@ -78,6 +78,14 @@ outdoorIssueRoutes.route("/app/outdoorIssue/delete/:id").delete((req, res, next)
         if (error) {
             return next(error);
         } else {
+            if (!data) {
+                res.status(404).json({
+                    msg: "outdoor issue of that id was not found (404)",
+                    id: req.params.id
+                })
+                return;
+            }
+
             res.status(200).json({
                 msg: "successfully deleted outdoor issue",
                 data: data

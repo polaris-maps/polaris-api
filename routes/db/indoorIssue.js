@@ -65,7 +65,7 @@ indoorIssueRoutes.route("/app/indoorIssue/update/:id").patch(function (req, res,
         } else {
             res.status(200).json({
                 msg: "successfully updated indoor issue",
-                data: data
+                oldData: data
             })
         }
     })

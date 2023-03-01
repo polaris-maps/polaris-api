@@ -69,7 +69,7 @@ buildingRoutes.route("/app/building/update/:id").patch(function (req, res, next)
         } else {
             res.status(200).json({
                 msg: "successfully updated building",
-                data: data
+                oldData: data
             })
         }
     })

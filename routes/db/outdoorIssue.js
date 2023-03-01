@@ -66,7 +66,7 @@ outdoorIssueRoutes.route("/app/outdoorIssue/update/:id").patch(function (req, re
         } else {
             res.status(200).json({
                 msg: "successfully updated outdoor issue",
-                data: data
+                oldData: data
             })
         }
     })

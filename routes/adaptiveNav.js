@@ -1,4 +1,12 @@
-// import * as RouteFeatures from "./types";
+const {
+    PermanentFeature,
+    Surface,
+    Track,
+    Smoothness,
+    Obstacle,
+    Restrictions,
+    AdaptiveNavRouteRequest
+} = require("./types");
 
 const express = require("express");
 const dotEnv = require("dotenv");
@@ -10,14 +18,33 @@ let outdoorIssue = require("../connections/outdoorIssue");
 const openRouteService = require("openrouteservice-js");
 let orsDirections = new openRouteService.Directions({ api_key: process.env.ORS_API_KEY });
 
+// TODO: customize defaults
+const defaultAdaptiveNav = {
+    avoid_features: ["steps"], // avoid steps by default
+    avoid_obstacles: [],
+    restrictions: {
+        "surface_type": "cobblestone:flattened",
+        "track_type": "grade1",
+        "smoothness_type": "good",
+        "maximum_incline": 6
+    }
+}
+
 // adaptiveNavRoutes is an instance of the express router.
 // We use it to define our routes.
 // The router will be added as a middleware and will take control of requests starting with path /app/building.
 const adaptiveNavRoutes = express.Router();
 
 adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
+  adaptiveNavDataReq = req.body;
+
   /** @type {AdaptiveNavRouteRequest} */
-  adaptiveNavData = req.body;
+  adaptiveNavData = {
+    coordinates: adaptiveNavDataReq.coordinates, // Only field required
+    avoid_features: adaptiveNavDataReq.avoid_features ?? defaultAdaptiveNav.avoid_features,
+    restrictions: adaptiveNavDataReq.restrictions ?? defaultAdaptiveNav.restrictions,
+    avoid_obstacles: adaptiveNavDataReq.avoid_obstacles ?? defaultAdaptiveNav.avoid_obstacles
+  }
 
   // Get obstacle locations of relevant obstacles
   obstacleList = [];
@@ -25,6 +52,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
     if (error) {
       return next(error)
     } else {
+        console.log(adaptiveNavDataReq.avoid_features);
       // Given obstacle list and route features, return route.
       orsDirections.calculate(
         {
@@ -32,7 +60,9 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
           profile: 'wheelchair',
           options: {
             avoid_features: adaptiveNavData.avoid_features, // can you keep steps in with wheelchair profile?
-            profile_params: adaptiveNavData.restrictions,
+            profile_params: {
+                "restrictions": adaptiveNavData.restrictions
+            },
             avoid_polygons: {
               type: 'Polygon',
               coordinates: [

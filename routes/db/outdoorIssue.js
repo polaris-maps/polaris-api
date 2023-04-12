@@ -21,7 +21,7 @@ outdoorIssueRoutes.route("/app/outdoorIssue/all").get(function (req, res, next) 
 
 // Get a list of all the outdoorIssues of specific categories.
 outdoorIssueRoutes.route("/app/outdoorIssue/filtered").post(function (req, res, next) {
-    outdoorIssue.find({ "category": { $in: req.body.category } }, (error, obstacleData) => {
+    outdoorIssue.find({ "category": { $in: req.body.category } }, (error, data) => {
         if (error) {
             return next(error)
         } else {

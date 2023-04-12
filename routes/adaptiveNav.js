@@ -17,6 +17,7 @@ let outdoorIssue = require("../connections/outdoorIssue");
 
 const openRouteService = require("openrouteservice-js");
 let orsDirections = new openRouteService.Directions({ api_key: process.env.ORS_API_KEY });
+let orsMatrix = new Openrouteservice.Matrix({ api_key: process.env.ORS_API_KEY })
 
 // TODO: customize defaults
 const defaultAdaptiveNav = {
@@ -57,7 +58,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
       orsDirections.calculate(
         {
           coordinates: adaptiveNavData.coordinates,
-          profile: 'wheelchair',
+          profile: 'wheelchair', // allow walking or wheelchair
           options: {
             avoid_features: adaptiveNavData.avoid_features, // can you keep steps in with wheelchair profile?
             profile_params: {
@@ -119,5 +120,44 @@ adaptiveNavRoutes.route("/app/route/hardcodedtest").get(function (req, res, next
       return next(err);
     });
 });
+
+// Given a start and an end building, determine the doors to use for routing, considering only distance.
+adaptiveNavRoutes.route("/app/route/minimizedoordistance").post(function (req, res, next) {
+    distanceReq = req.body;
+
+    // get all doors for source and dest buildings
+  
+    // Get obstacle locations of relevant obstacles // TODO: complete
+    obstacleList = [];
+    outdoorIssue.find({ "category": { $in: adaptiveNavData.avoid_obstacles } }, "avoidPolygon", (error, obstacleData) => {
+      if (error) {
+        return next(error)
+      } else {
+          console.log(adaptiveNavDataReq.avoid_features);
+        // Given obstacle list and route features, return route.
+        Matrix.calculate({
+            locations: [[8.690958, 49.404662], [8.687868, 49.390139], [8.687868, 49.390133]],
+            profile: "walking",
+            sources: ['all'],
+            destinations: ['all']
+          })
+          .then(function(response) {
+            // Add your own result handling here
+            console.log("response", response)
+          })
+          .catch(function(err) {
+            const str = "An error occurred: " + err
+            console.log(str)
+          })
+          .then(function (json) {
+            // Add your own result handling here
+            res.status(200).json(json);
+          })
+          .catch(function (err) {
+            return next(err);
+          });
+      }
+    })
+  });
 
 module.exports = adaptiveNavRoutes;

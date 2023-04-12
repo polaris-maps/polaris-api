@@ -20,8 +20,8 @@ indoorIssueRoutes.route("/app/indoorIssue/all").get(function (req, res, next) {
 });
 
 // Get a list of all the indoorIssues of specific categories.
-indoorIssueRoutes.route("/app/outdoorIssue/filtered").post(function (req, res, next) {
-    indoorIssue.find({ "category": { $in: req.body.category } }, (error, obstacleData) => {
+indoorIssueRoutes.route("/app/indoorIssue/filtered").post(function (req, res, next) {
+    indoorIssue.find({ "category": { $in: req.body.category } }, (error, data) => {
         if (error) {
             return next(error)
         } else {

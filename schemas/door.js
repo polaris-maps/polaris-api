@@ -8,9 +8,13 @@ var doorSchema = new Schema({
         type: Schema.Types.ObjectId, 
         ref: 'buildings'
     },
+    ramps: [{
+        type: Schema.Types.ObjectId, 
+        ref: 'ramps'
+    }],
     automatic: Boolean,
-    entrance: Boolean,
-    attributes: String
+    stairs: Boolean,
+    entrance: Boolean
 }, {
     collection: 'doors'
 })

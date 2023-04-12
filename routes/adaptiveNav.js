@@ -84,7 +84,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
   })
 });
 
-adaptiveNavRoutes.route("/app/route/hardcodedtest").get(function (req, res, next) {
+adaptiveNavRoutes.route("/app/route/hardcoded-test").get(function (req, res, next) {
   orsDirections.calculate({
     coordinates: [[8.690958, 49.404662], [8.687868, 49.390139]],
     profile: 'wheelchair',
@@ -122,7 +122,7 @@ adaptiveNavRoutes.route("/app/route/hardcodedtest").get(function (req, res, next
 });
 
 // Given a start and an end building, determine the doors to use for routing, considering only distance.
-adaptiveNavRoutes.route("/app/route/minimizedoordistance").post(function (req, res, next) {
+adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req, res, next) {
     distanceReq = req.body;
 
     // get all doors for source and dest buildings

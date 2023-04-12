@@ -2,10 +2,10 @@ const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
 const mongoose = require("mongoose");
 
-const buildingSchema = require("../schemas/building")
+const doorSchema = require("../schemas/door")
 
 var conn = mongoose.createConnection(process.env.ATLAS_URI_CAMPUSES);
 
-var buildingConnection = conn.model('building', buildingSchema);
+var doorConnection = conn.model('door', doorSchema);
 
-module.exports = buildingConnection
+module.exports = doorConnection

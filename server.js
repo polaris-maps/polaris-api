@@ -12,6 +12,7 @@ const indoorIssueRoutes = require("./routes/db/indoorIssue")
 const outdoorIssueRoutes = require("./routes/db/outdoorIssue")
 const userRoutes = require("./routes/db/user")
 const buildingRoutes = require("./routes/db/building")
+const doorRoutes = require("./routes/db/door")
 const apiLogRoutes = require("./routes/db/apiLog")
 const clientLogRoutes = require("./routes/db/clientLog")
 const adaptiveNavRoutes = require("./routes/adaptiveNav")
@@ -48,6 +49,7 @@ app.use(indoorIssueRoutes);
 app.use(outdoorIssueRoutes);
 app.use(userRoutes);
 app.use(buildingRoutes);
+app.use(doorRoutes);
 app.use(apiLogRoutes);
 app.use(clientLogRoutes);
 app.use(adaptiveNavRoutes);

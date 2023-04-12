@@ -17,7 +17,7 @@ let outdoorIssue = require("../connections/outdoorIssue");
 
 const openRouteService = require("openrouteservice-js");
 let orsDirections = new openRouteService.Directions({ api_key: process.env.ORS_API_KEY });
-let orsMatrix = new Openrouteservice.Matrix({ api_key: process.env.ORS_API_KEY })
+let orsMatrix = new openRouteService.Matrix({ api_key: process.env.ORS_API_KEY })
 
 // TODO: customize defaults
 const defaultAdaptiveNav = {
@@ -135,7 +135,7 @@ adaptiveNavRoutes.route("/app/route/minimizedoordistance").post(function (req, r
       } else {
           console.log(adaptiveNavDataReq.avoid_features);
         // Given obstacle list and route features, return route.
-        Matrix.calculate({
+        orsMatrix.calculate({
             locations: [[8.690958, 49.404662], [8.687868, 49.390139], [8.687868, 49.390133]],
             profile: "walking",
             sources: ['all'],

@@ -5,12 +5,15 @@ const {
     Smoothness,
     Obstacle,
     Restrictions,
-    AdaptiveNavRouteRequest
+    AdaptiveNavRouteRequest,
+    DoorDistanceRequest
 } = require("./types");
 
 const express = require("express");
 const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
+
+const ROUTE_IMPOSSIBLE = 500;
 
 // let IndoorIssue = require("../connections/indoorIssue");
 let outdoorIssue = require("../connections/outdoorIssue");
@@ -30,6 +33,12 @@ const defaultAdaptiveNav = {
         "smoothness_type": "good",
         "maximum_incline": 6
     }
+}
+
+const defaultDoorDistanceReq = {
+    maximum_number_results: 1,
+    exclude_stairs: false,
+    require_automatic: false
 }
 
 // adaptiveNavRoutes is an instance of the express router.
@@ -124,26 +133,52 @@ adaptiveNavRoutes.route("/app/route/hardcoded-test").get(function (req, res, nex
 
 // Given a start and an end building, determine the doors to use for routing, considering distance and door restrictions.
 adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req, res, next) {
-    distanceReq = req.body;
+    rawDistanceReq = req.body;
+
+    /** @type {DoorDistanceRequest} */
+    distanceReq = {
+        source: rawDistanceReq.source, // required
+        destination: rawDistanceReq.destination, // required
+        number: rawDistanceReq.maximum_number_results ?? defaultDoorDistanceReq.maximum_number_results,
+        exclude_stairs: rawDistanceReq.exclude_stairs ?? defaultDoorDistanceReq.exclude_stairs,
+        require_automatic: rawDistanceReq.require_automatic ?? defaultDoorDistanceReq.require_automatic
+    }
+
+    let doorAttributes = {
+        "emergency": false
+    };
+    if (distanceReq.exclude_stairs) {
+        doorAttributes = { ...doorAttributes, "stairs": false}
+    };
+    if (distanceReq.require_automatic) {
+        doorAttributes = { ...doorAttributes, "automatic": true}
+    };
+    console.log(doorAttributes);
 
     // get all doors for source and dest buildings, and use for matrix calculations
-    door.find({ "building": distanceReq.source }, (error, sourceDoors) => {
+    door.find({ "building": distanceReq.source, ...doorAttributes }, (error, sourceDoors) => {
         if (error) {
             return next(error)
+        } else if (sourceDoors.length < 1) {
+            res.json({ "message": "Route impossible. (No source doors exist with those attributes.) (500)" })
+            res.status(ROUTE_IMPOSSIBLE)
         } else {
             sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
 
-            door.find({ "building": distanceReq.destination }, (error, destinationDoors) => {
+            door.find({ "building": distanceReq.destination, ...doorAttributes }, (error, destinationDoors) => {
                 if (error) {
                     return next(error)
+                } else if (destinationDoors.length < 1) {
+                    res.json({ "message": "Route impossible. (No destination doors exist with those attributes.) (500)" })
+                    res.status(ROUTE_IMPOSSIBLE)
                 } else {
                     destinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
 
                     orsMatrix.calculate({
                         locations: [...sourceDoorsLocations, ...destinationDoorsLocations],
                         profile: "foot-walking",
-                        sources: Array.from({length: sourceDoors.length}, (_, i) => i ),  // instead of 'all'
-                        destinations: Array.from({length: destinationDoors.length}, (_, i) => i + sourceDoors.length)  // instead of 'all'
+                        sources: Array.from({ length: sourceDoors.length }, (_, i) => i),  // instead of 'all'
+                        destinations: Array.from({ length: destinationDoors.length }, (_, i) => i + sourceDoors.length)  // instead of 'all'
                     })
                         .then(function (json) {
                             // Add your own result handling here

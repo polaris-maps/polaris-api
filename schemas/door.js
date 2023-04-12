@@ -15,7 +15,8 @@ var doorSchema = new Schema({
     automatic: Boolean,
     stairs: Boolean,
     entrance: Boolean,
-    emergency: Boolean
+    emergency: Boolean,
+    otherAttributes: [String]
 }, {
     collection: 'doors'
 })

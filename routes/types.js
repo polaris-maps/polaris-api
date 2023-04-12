@@ -103,3 +103,12 @@ const Obstacle = {
  * @property {Restrictions} [restrictions]
  * @property {[Obstacle | string]} [avoid_obstacles] // need to define obstacle types
  * */
+
+/**
+ * @typedef {Object} DoorDistanceRequest
+ * @property {string} [source]
+ * @property {string} [destination]
+ * @property {number} [maximum_number_results]
+ * @property {boolean} [exclude_stairs]
+ * @property {boolean} [require_automatic]
+ * */

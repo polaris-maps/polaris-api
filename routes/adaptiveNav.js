@@ -14,6 +14,7 @@ dotEnv.config({ path: "./config.env" });
 
 // let IndoorIssue = require("../connections/indoorIssue");
 let outdoorIssue = require("../connections/outdoorIssue");
+let door = require("../connections/door");
 
 const openRouteService = require("openrouteservice-js");
 let orsDirections = new openRouteService.Directions({ api_key: process.env.ORS_API_KEY });
@@ -37,127 +38,124 @@ const defaultAdaptiveNav = {
 const adaptiveNavRoutes = express.Router();
 
 adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
-  adaptiveNavDataReq = req.body;
+    adaptiveNavDataReq = req.body;
 
-  /** @type {AdaptiveNavRouteRequest} */
-  adaptiveNavData = {
-    coordinates: adaptiveNavDataReq.coordinates, // Only field required
-    avoid_features: adaptiveNavDataReq.avoid_features ?? defaultAdaptiveNav.avoid_features,
-    restrictions: adaptiveNavDataReq.restrictions ?? defaultAdaptiveNav.restrictions,
-    avoid_obstacles: adaptiveNavDataReq.avoid_obstacles ?? defaultAdaptiveNav.avoid_obstacles
-  }
-
-  // Get obstacle locations of relevant obstacles
-  obstacleList = [];
-  outdoorIssue.find({ "category": { $in: adaptiveNavData.avoid_obstacles } }, "avoidPolygon", (error, obstacleData) => {
-    if (error) {
-      return next(error)
-    } else {
-        console.log(adaptiveNavDataReq.avoid_features);
-      // Given obstacle list and route features, return route.
-      orsDirections.calculate(
-        {
-          coordinates: adaptiveNavData.coordinates,
-          profile: 'wheelchair', // allow walking or wheelchair
-          options: {
-            avoid_features: adaptiveNavData.avoid_features, // can you keep steps in with wheelchair profile?
-            profile_params: {
-                "restrictions": adaptiveNavData.restrictions
-            },
-            avoid_polygons: {
-              type: 'Polygon',
-              coordinates: [
-                obstacleData
-              ]
-            }
-          },
-          format: 'geojson'
-        })
-        .then(function (json) {
-          // Add your own result handling here
-          res.status(200).json(json);
-        })
-        .catch(function (err) {
-          return next(err);
-        });
+    /** @type {AdaptiveNavRouteRequest} */
+    adaptiveNavData = {
+        coordinates: adaptiveNavDataReq.coordinates, // Only field required
+        avoid_features: adaptiveNavDataReq.avoid_features ?? defaultAdaptiveNav.avoid_features,
+        restrictions: adaptiveNavDataReq.restrictions ?? defaultAdaptiveNav.restrictions,
+        avoid_obstacles: adaptiveNavDataReq.avoid_obstacles ?? defaultAdaptiveNav.avoid_obstacles
     }
-  })
+
+    // Get obstacle locations of relevant obstacles
+    obstacleList = [];
+    door.find({ "category": { $in: adaptiveNavData.avoid_obstacles } }, "avoidPolygon", (error, obstacleData) => {
+        if (error) {
+            return next(error)
+        } else {
+            console.log(adaptiveNavDataReq.avoid_features);
+            // Given obstacle list and route features, return route.
+            orsDirections.calculate(
+                {
+                    coordinates: adaptiveNavData.coordinates,
+                    profile: 'wheelchair', // allow walking or wheelchair
+                    options: {
+                        avoid_features: adaptiveNavData.avoid_features, // can you keep steps in with wheelchair profile?
+                        profile_params: {
+                            "restrictions": adaptiveNavData.restrictions
+                        },
+                        avoid_polygons: {
+                            type: 'Polygon',
+                            coordinates: [
+                                obstacleData
+                            ]
+                        }
+                    },
+                    format: 'geojson'
+                })
+                .then(function (json) {
+                    // Add your own result handling here
+                    res.status(200).json(json);
+                })
+                .catch(function (err) {
+                    return next(err);
+                });
+        }
+    })
 });
 
 adaptiveNavRoutes.route("/app/route/hardcoded-test").get(function (req, res, next) {
-  orsDirections.calculate({
-    coordinates: [[8.690958, 49.404662], [8.687868, 49.390139]],
-    profile: 'wheelchair',
-    options: {
-      avoid_features: ["steps"],
-      profile_params: {
-        "restrictions": {
-          "surface_type": "cobblestone:flattened",
-          "track_type": "grade1",
-          "smoothness_type": "good",
-          "maximum_incline": 6
-        }
-      },
-      avoid_polygons: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [8.683533668518066, 49.41987949639816],
-            [8.680272102355957, 49.41812070066643],
-            [8.683919906616211, 49.4132348262363],
-            [8.689756393432617, 49.41806486484901],
-            [8.683533668518066, 49.41987949639816]
-          ]
-        ]
-      }
-    },
-    format: 'geojson'
-  })
-    .then(function (json) {
-      res.status(200).json(json);
+    orsDirections.calculate({
+        coordinates: [[8.690958, 49.404662], [8.687868, 49.390139]],
+        profile: 'wheelchair',
+        options: {
+            avoid_features: ["steps"],
+            profile_params: {
+                "restrictions": {
+                    "surface_type": "cobblestone:flattened",
+                    "track_type": "grade1",
+                    "smoothness_type": "good",
+                    "maximum_incline": 6
+                }
+            },
+            avoid_polygons: {
+                type: 'Polygon',
+                coordinates: [
+                    [
+                        [8.683533668518066, 49.41987949639816],
+                        [8.680272102355957, 49.41812070066643],
+                        [8.683919906616211, 49.4132348262363],
+                        [8.689756393432617, 49.41806486484901],
+                        [8.683533668518066, 49.41987949639816]
+                    ]
+                ]
+            }
+        },
+        format: 'geojson'
     })
-    .catch(function (err) {
-      return next(err);
-    });
+        .then(function (json) {
+            res.status(200).json(json);
+        })
+        .catch(function (err) {
+            return next(err);
+        });
 });
 
-// Given a start and an end building, determine the doors to use for routing, considering only distance.
+// Given a start and an end building, determine the doors to use for routing, considering distance and door restrictions.
 adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req, res, next) {
     distanceReq = req.body;
 
-    // get all doors for source and dest buildings
-  
-    // Get obstacle locations of relevant obstacles // TODO: complete
-    obstacleList = [];
-    outdoorIssue.find({ "category": { $in: adaptiveNavData.avoid_obstacles } }, "avoidPolygon", (error, obstacleData) => {
-      if (error) {
-        return next(error)
-      } else {
-          console.log(adaptiveNavDataReq.avoid_features);
-        // Given obstacle list and route features, return route.
-        orsMatrix.calculate({
-            locations: [[8.690958, 49.404662], [8.687868, 49.390139], [8.687868, 49.390133]],
-            profile: "walking",
-            sources: ['all'],
-            destinations: ['all']
-          })
-          .then(function(response) {
-            // Add your own result handling here
-            console.log("response", response)
-          })
-          .catch(function(err) {
-            const str = "An error occurred: " + err
-            console.log(str)
-          })
-          .then(function (json) {
-            // Add your own result handling here
-            res.status(200).json(json);
-          })
-          .catch(function (err) {
-            return next(err);
-          });
-      }
+    // get all doors for source and dest buildings, and use for matrix calculations
+    door.find({ "building": distanceReq.source }, (error, sourceDoors) => {
+        if (error) {
+            return next(error)
+        } else {
+            sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
+
+            door.find({ "building": distanceReq.destination }, (error, destinationDoors) => {
+                if (error) {
+                    return next(error)
+                } else {
+                    destinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
+
+                    orsMatrix.calculate({
+                        locations: [...sourceDoorsLocations, ...destinationDoorsLocations],
+                        profile: "foot-walking",
+                        sources: Array.from({length: sourceDoors.length}, (_, i) => i ),  // instead of 'all'
+                        destinations: Array.from({length: destinationDoors.length}, (_, i) => i + sourceDoors.length)  // instead of 'all'
+                    })
+                        .then(function (json) {
+                            // Add your own result handling here
+                            res.status(200).json(json);
+                        })
+                        .catch(function (err) {
+                            return next(err);
+                        });
+                }
+            })
+        }
     })
-  });
+});
 
 module.exports = adaptiveNavRoutes;

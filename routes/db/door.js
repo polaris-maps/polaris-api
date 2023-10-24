@@ -21,7 +21,7 @@ doorRoutes.route("/app/door/all").get(function (req, res, next) {
 
 // Get a list of all the doors of a specific building.
 doorRoutes.route("/app/door/filtered/:buildingId").get(function (req, res, next) {
-    door.find({ "buildingId": req.params.buildingId }, (error, data) => {
+    door.find({ "building": req.params.buildingId }, (error, data) => {
         if (error) {
             return next(error)
         } else {

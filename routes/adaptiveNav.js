@@ -41,6 +41,15 @@ const defaultDoorDistanceReq = {
     require_automatic: false
 }
 
+let nSmallest = (n, arr) => {
+    const copy = arr.slice();
+    for(let i = 0; i < n - 1; i++){
+        const minIndex = copy.indexOf(Math.min(...copy));
+        copy.splice(minIndex, 1);
+    };
+    return Math.min(...copy);
+};
+
 // adaptiveNavRoutes is an instance of the express router.
 // We use it to define our routes.
 // The router will be added as a middleware and will take control of requests starting with path /app/building.
@@ -153,7 +162,6 @@ adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req,
     if (distanceReq.require_automatic) {
         doorAttributes = { ...doorAttributes, "automatic": true}
     };
-    console.log(doorAttributes);
 
     // get all doors for source and dest buildings, and use for matrix calculations
     door.find({ "building": distanceReq.source, ...doorAttributes }, (error, sourceDoors) => {
@@ -172,16 +180,42 @@ adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req,
                     res.json({ "message": "Route impossible. (No destination doors exist with those attributes.) (500)" })
                     res.status(ROUTE_IMPOSSIBLE)
                 } else {
-                    destinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
-
+                    testdestinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
+                    test = [[-79.050822, 35.91312]]
+                    destinationDoorsLocations = [...testdestinationDoorsLocations, ...test]
+                    console.log(destinationDoorsLocations)
                     orsMatrix.calculate({
                         locations: [...sourceDoorsLocations, ...destinationDoorsLocations],
                         profile: "foot-walking",
-                        sources: Array.from({ length: sourceDoors.length }, (_, i) => i),  // instead of 'all'
-                        destinations: Array.from({ length: destinationDoors.length }, (_, i) => i + sourceDoors.length)  // instead of 'all'
+                        sources: Array.from({ length: sourceDoorsLocations.length }, (_, i) => i),  // instead of 'all'
+                        destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + sourceDoors.length)  // instead of 'all'
                     })
                         .then(function (json) {
-                            // Add your own result handling here
+                            // return a limited number of longitude and latitudes to consider.
+                            // durations are assumed to be given as an array of arrays, 
+                            // where the outer array is indexed by source,
+                            // and the inner array is indexed by destination.
+
+                            console.log(json)
+
+                            // todo: fix durations cleaned
+                            durationsCleaned = (json.durations).map((listDuration) => listDuration[0]);
+                            maxDuration = nSmallest(distanceReq.number, durationsCleaned);
+
+                            console.log(durationsCleaned)
+
+                            result = [];
+                            for(let i = 0; i < durationsCleaned.length; i++){
+                                if(durationsCleaned[i] > maxDuration){
+                                   continue;
+                                };
+                                // json.metadata.query.locations[i]
+                                result.push({
+                                    "source": "",
+                                    "destination": ""
+                                });
+                             };
+
                             res.status(200).json(json);
                         })
                         .catch(function (err) {

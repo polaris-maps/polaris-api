@@ -68,7 +68,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
 
     // Get obstacle locations of relevant obstacles
     obstacleList = [];
-    door.find({ "category": { $in: adaptiveNavData.avoid_obstacles } }, "avoidPolygon", (error, obstacleData) => {
+    outdoorIssue.find({ "category": { $in: adaptiveNavData.avoid_obstacles } }, "avoidPolygon", (error, obstacleData) => {
         if (error) {
             return next(error)
         } else {

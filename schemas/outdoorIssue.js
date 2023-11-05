@@ -5,7 +5,7 @@ var outdoorIssueSchema = new Schema({
     avoidPolygon: [[Number]],
     latitude: Number,
     longitude: Number,
-    category: String,
+    category: [String],
     description: String,
     status: String,
     datetimeOpen: Number,

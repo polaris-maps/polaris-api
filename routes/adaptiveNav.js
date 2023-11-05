@@ -73,6 +73,25 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
             return next(error)
         } else {
             console.log(adaptiveNavDataReq.avoid_features);
+            // console.log("Obstacle Data:", obstacleData);
+            const avoidPolygons = obstacleData.map(obj => obj.avoidPolygon);
+            console.log("Polygon Data:", avoidPolygons);
+
+            console.log("Request Payload:", {
+                coordinates: adaptiveNavData.coordinates,
+                profile: 'wheelchair',
+                options: {
+                  avoid_features: adaptiveNavData.avoid_features,
+                  profile_params: {
+                    "restrictions": adaptiveNavData.restrictions
+                  },
+                  avoid_polygons: {
+                    type: 'Polygon',
+                    coordinates: [avoidPolygons]
+                  }
+                },
+                format: 'geojson'
+              });
             // Given obstacle list and route features, return route.
             orsDirections.calculate(
                 {
@@ -85,9 +104,8 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
                         },
                         avoid_polygons: {
                             type: 'Polygon',
-                            coordinates: [
-                                obstacleData
-                            ]
+                            coordinates: 
+                                avoidPolygons
                         }
                     },
                     format: 'geojson'

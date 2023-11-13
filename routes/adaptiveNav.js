@@ -70,26 +70,39 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
     obstacleList = [];
     outdoorIssue.find({ "category": { $in: adaptiveNavData.avoid_obstacles } }, "avoidPolygon", (error, obstacleData) => {
         if (error) {
+            console.log(error)
             return next(error)
         } else {
-            console.log(adaptiveNavDataReq.avoid_features);
+            console.log(adaptiveNavData.avoid_features);
+            // console.log("Obstacle Data:", obstacleData);
+            const avoidPolygons = obstacleData.map(obj => obj.avoidPolygon);
+            console.log("Polygon Data:", avoidPolygons);
+
+            let adaptiveNavOptions = {
+                avoid_features: adaptiveNavData.avoid_features, // can you keep steps in with wheelchair profile?
+                profile_params: {
+                    "restrictions": adaptiveNavData.restrictions
+                }
+            };
+
+            if (avoidPolygons.length > 0) {
+                adaptiveNavOptions = {
+                    ...adaptiveNavOptions,
+                    avoid_polygons: {
+                        type: 'Polygon',
+                        coordinates: 
+                            avoidPolygons
+                    }
+                }
+                console.log(adaptiveNavOptions)
+            }
+
             // Given obstacle list and route features, return route.
             orsDirections.calculate(
                 {
                     coordinates: adaptiveNavData.coordinates,
                     profile: 'wheelchair', // allow walking or wheelchair
-                    options: {
-                        avoid_features: adaptiveNavData.avoid_features, // can you keep steps in with wheelchair profile?
-                        profile_params: {
-                            "restrictions": adaptiveNavData.restrictions
-                        },
-                        avoid_polygons: {
-                            type: 'Polygon',
-                            coordinates: [
-                                obstacleData
-                            ]
-                        }
-                    },
+                    options: adaptiveNavOptions,
                     format: 'geojson'
                 })
                 .then(function (json) {

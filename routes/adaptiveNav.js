@@ -153,6 +153,58 @@ adaptiveNavRoutes.route("/app/route/hardcoded-test").get(function (req, res, nex
         });
 });
 
+adaptiveNavRoutes.route("/app/route/hardcoded-test2").get(function (req, res, next) {
+    orsDirections.calculate({
+        coordinates: [[-79.046187, 35.910986], [-79.053061, 35.909575]],
+        profile: 'wheelchair',
+        options: {
+            avoid_features: ["steps"],
+            profile_params: {
+                "restrictions": {
+                    "surface_type": "cobblestone:flattened",
+                    "track_type": "grade1",
+                    "smoothness_type": "good",
+                    "maximum_incline": 6
+                }
+            },
+            avoid_polygons: {
+                type: 'Polygon',
+                coordinates: [
+                    [
+                        [
+                            -79.050574,
+                            35.910172
+                        ],
+                        [
+                            -79.04985,
+                            35.910457
+                        ],
+                        [
+                            -79.049587,
+                            35.909994
+                        ],
+                        [
+                            -79.050312,
+                            35.909731
+                        ],
+                        [
+                            -79.050574,
+                            35.910172
+                        ]
+                    ]
+                ]
+            }
+        },
+        format: 'geojson'
+    })
+        .then(function (json) {
+            res.status(200).json(json);
+        })
+        .catch(function (err) {
+            return next(err);
+        });
+});
+
 // Given a start and an end building, determine the doors to use for routing, considering distance and door restrictions.
 adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req, res, next) {
     rawDistanceReq = req.body;

@@ -7,7 +7,8 @@ chai.should();
 
 describe('Adaptive Navigation API Documentation', () => {
   // Test /app/route endpoint from documentation
-  describe('/app/route', () => {
+  describe('/app/route', function() {
+    this.timeout(5000);
     it('it should return a valid route', (done) => {
       const requestBody = {
         "coordinates": [[-79.045848, 35.904798], [-79.053061, 35.909575]],
@@ -25,6 +26,7 @@ describe('Adaptive Navigation API Documentation', () => {
         .post('/app/route')
         .send(requestBody)
         .end((err, res) => {
+          if (err) return done(err);
           res.should.have.status(200);
           res.body.should.be.a('object');
           

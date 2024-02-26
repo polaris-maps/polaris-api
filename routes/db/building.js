@@ -30,6 +30,45 @@ buildingRoutes.route("/app/building/:id").get(function (req, res, next) {
     })
 });
 
+// // Get a single building by name
+// buildingRoutes.route("/app/building/name/:name").get(function (req, res, next) {
+//     building.findOne({ name: req.params.name }, (error, data) => {
+//         if (error) {
+//             return next(error);
+//         } else {
+//             if (!data) {
+//                 res.status(404).json({
+//                     message: "Building with that name not found (404)",
+//                     name: req.params.name
+//                 });
+//                 return;
+//             }
+//             res.json(data);
+//         }
+//     });
+// });
+
+// Get buildings by name (partial match)
+// buildingRoutes.route("/app/building/name/:name").get(function (req, res, next) {
+//     const nameRegex = new RegExp(req.params.name, 'i'); 
+
+//     building.find({ name: { $regex: nameRegex } }, (error, data) => {
+//         if (error) {
+//             return next(error);
+//         } else {
+//             if (!data || data.length === 0) {
+//                 res.status(404).json({
+//                     message: "No buildings found containing the name",
+//                     name: req.params.name
+//                 });
+//                 return;
+//             }
+//             res.json(data);
+//         }
+//     });
+// });
+
+
 // Create a new building.
 buildingRoutes.route("/app/building/add").post(function (req, res, next) {
     building.create(req.body, (error, data) => {

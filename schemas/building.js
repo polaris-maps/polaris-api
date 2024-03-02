@@ -7,7 +7,11 @@ var buildingSchema = new Schema({
     defaultLatitude: Number,
     defaultLongitude: Number,
     campus: String,
-    address: String
+    address: String,
+    doors: [{
+        type: Schema.Types.ObjectId, 
+        ref: 'doors'
+    }]
 }, {
     collection: 'buildings'
 })

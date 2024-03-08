@@ -8,10 +8,6 @@ var buildingSchema = new Schema({
     defaultLongitude: Number,
     campus: String,
     address: String,
-    doors: [{
-        type: Schema.Types.ObjectId, 
-        ref: 'doors'
-    }]
 }, {
     collection: 'buildings'
 })

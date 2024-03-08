@@ -292,4 +292,80 @@ adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req,
     })
 });
 
+adaptiveNavRoutes.route("/app/route/to-door").post(function (req, res, next) {
+    const rawLocationReq = req.body;
+
+    const currentLocation = {
+        longitude: rawLocationReq.longitude, // required
+        latitude: rawLocationReq.latitude, // required
+    };
+
+    /** @type {DoorDistanceRequest} */
+    const locationReq = {
+        destination: rawLocationReq.destination, // required
+        number: rawLocationReq.maximum_number_results ?? defaultDoorDistanceReq.maximum_number_results,
+        exclude_stairs: rawLocationReq.exclude_stairs ?? defaultDoorDistanceReq.exclude_stairs,
+        require_automatic: rawLocationReq.require_automatic ?? defaultDoorDistanceReq.require_automatic
+    };
+
+    let doorAttributes = {
+        "emergency": false
+    };
+    if (locationReq.exclude_stairs) {
+        doorAttributes = { ...doorAttributes, "stairs": false }
+    };
+    if (locationReq.require_automatic) {
+        doorAttributes = { ...doorAttributes, "automatic": true }
+    };
+
+    // Find all doors for the destination building with specified attributes
+    door.find({ "building": locationReq.destination, ...doorAttributes }, (error, destinationDoors) => {
+        if (error) {
+            return next(error);
+        } else if (destinationDoors.length < 1) {
+            res.status(404).json({ "message": "Route impossible. (No destination doors exist with those attributes.)" });
+        } else {
+            const destinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
+
+            const startLocationArray = [[currentLocation.longitude, currentLocation.latitude]];
+
+            orsMatrix.calculate({
+                locations: [...startLocationArray, ...destinationDoorsLocations],
+                profile: "foot-walking",
+                sources: [0], 
+                destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + 1) 
+            })
+            .then(function (json) {
+                let minDuration = Infinity;
+                let destinationIndex = -1;
+
+                const durations = json.durations[0]; 
+                durations.forEach((duration, i) => {
+                    if (duration < minDuration) {
+                        minDuration = duration;
+                        destinationIndex = i; 
+                    }
+                });
+
+                if (destinationIndex !== -1) {
+                    const shortestPath = {
+                        start: currentLocation,
+                        end: destinationDoors[destinationIndex],
+                        duration: minDuration
+                    };
+
+                    res.status(200).json(shortestPath);
+                } else {
+                    // Handle case where no path was found
+                    res.status(404).json({ message: "No path found" });
+                }
+            })
+            .catch(function (err) {
+                return next(err);
+            });
+        }
+    });
+});
+
+
 module.exports = adaptiveNavRoutes;

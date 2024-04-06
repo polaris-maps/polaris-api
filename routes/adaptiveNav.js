@@ -57,10 +57,9 @@ function selectDoorForBuilding({
     exclude_stairs = false,
     require_automatic = false,
     current_location = null,
+    originalCoordinates = []
 }) {
-    //console.log(source);
-    //console.log(destination);
-    //console.log(current_location);
+
     return new Promise((resolve, reject) => {
         if (!source && !destination) {
             return reject(new Error("Source or destination must be provided"));
@@ -82,7 +81,8 @@ function selectDoorForBuilding({
                 if (error) {
                     reject(error);
                 } else if (sourceDoors.length < 1) {
-                    reject(new Error("Route Impossible: No source doors meet criteria."));
+                    //reject(new Error("Route Impossible: No source doors meet criteria."));
+                    resolve({ useOriginal: true });
                 } else {
                     sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
 
@@ -90,7 +90,8 @@ function selectDoorForBuilding({
                         if (error) {
                             reject(error);
                         } else if (destinationDoors.length < 1) {
-                            reject(new Error("Route Impossible: No destination doors meet criteria."));
+                            //reject(new Error("Route Impossible: No destination doors meet criteria."));
+                            resolve({ useOriginal: true });
                         } else {
                             const destinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
                         
@@ -101,7 +102,6 @@ function selectDoorForBuilding({
                                 destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + sourceDoors.length) 
                             })
                             .then(function (json) {
-                                console.log(json);
                                 let minDistance = Infinity;
                                 let closestPair = { sourceIndex: -1, destinationIndex: -1 };
                         
@@ -151,7 +151,8 @@ function selectDoorForBuilding({
                 if (error) {
                     reject(error);
                 } else if (destinationDoors.length < 1) {
-                    reject(new Error("Route Impossible"));
+                    //reject(new Error("Route Impossible"));
+                    resolve({ useOriginal: true });
                 } else {
                     const destinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
 
@@ -237,11 +238,16 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
 
     doorSelectionPromise.then(sourceCoordinates => {
         if (sourceCoordinates) {
-            if (sourceCoordinates.SourceDoorCoordinates && sourceCoordinates.DestinationDoorCoordinates) {
-                adaptiveNavDataReq.coordinates[0] = sourceCoordinates.SourceDoorCoordinates;
-                adaptiveNavDataReq.coordinates[1] = sourceCoordinates.DestinationDoorCoordinates;
-            } else if (sourceCoordinates.end) {
-                adaptiveNavDataReq.coordinates[1] = sourceCoordinates.end;
+            if (sourceCoordinates.useOriginal) {
+                console.log("Using original coordinates since error finding doors")
+            }
+            else{
+                if (sourceCoordinates.SourceDoorCoordinates && sourceCoordinates.DestinationDoorCoordinates) {
+                    adaptiveNavDataReq.coordinates[0] = sourceCoordinates.SourceDoorCoordinates;
+                    adaptiveNavDataReq.coordinates[1] = sourceCoordinates.DestinationDoorCoordinates;
+                } else if (sourceCoordinates.end) {
+                    adaptiveNavDataReq.coordinates[1] = sourceCoordinates.end;
+                }
             }
         }
 

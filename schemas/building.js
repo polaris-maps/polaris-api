@@ -7,7 +7,7 @@ var buildingSchema = new Schema({
     defaultLatitude: Number,
     defaultLongitude: Number,
     campus: String,
-    address: String
+    address: String,
 }, {
     collection: 'buildings'
 })

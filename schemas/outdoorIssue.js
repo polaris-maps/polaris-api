@@ -24,6 +24,13 @@ var outdoorIssueSchema = new Schema({
         },
         required: true,
     },
+    subject: {
+        type: String,
+        trim: true,
+        minlength: 1,
+        maxlength: 255,
+        required: true,
+    },
     description: {
         type: String,
         trim: true,
@@ -42,6 +49,10 @@ var outdoorIssueSchema = new Schema({
         type: Number,
         required: true,
     },
+    datetimeUpdated: {
+        type: Number,
+        required: true,
+    },
     datetimeClosed: {
         type: Number,
         required: true,
@@ -53,6 +64,11 @@ var outdoorIssueSchema = new Schema({
     votes: {
         type: [String],
         required: true,
+    },
+    image: {
+        type: String,
+        trim: true,
+        required: false
     }
 }, {
     collection: 'outdoorIssues'

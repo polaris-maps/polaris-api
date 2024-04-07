@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 var outdoorIssueSchema = new Schema({
     avoidPolygon: {
-        type: [[Number]],
+        type: [[[Number]]],
         required: true,
     },
     latitude: {

@@ -268,7 +268,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
             adaptiveNavOptions = {
                 ...adaptiveNavOptions,
                 avoid_polygons: {
-                    type: 'Polygon',
+                    type: 'MultiPolygon',
                     coordinates: avoidPolygons
                 }
             }

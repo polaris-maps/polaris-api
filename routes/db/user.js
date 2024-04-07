@@ -6,10 +6,11 @@ const express = require("express");
 const userRoutes = express.Router();
 
 // This will help us connect to the database
-let User = require("../../connections/user");
+let User = require("../../connections/user");//SQL Connect to DB
 
 // Get a list of all the users.
 userRoutes.route("/app/user/all").get(function (req, res, next) {
+    //SELECT * FROM Profile
     User.find((error, data) => {
         if (error) {
             return next(error)
@@ -21,6 +22,8 @@ userRoutes.route("/app/user/all").get(function (req, res, next) {
 
 // Get a single user by id
 userRoutes.route("/app/user/:id").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Profile WHERE profile_id = id
     User.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)
@@ -32,6 +35,9 @@ userRoutes.route("/app/user/:id").get(function (req, res, next) {
 
 // Create a new user.
 userRoutes.route("/app/user/add").post(function (req, res, next) {
+    //SQL Equivalent:
+    //INSERT INTO Profile (favoriteLocations, indoorIssueInteractions, indoorIssuesCreated) 
+    //VALUES ('Location1,Location2', 'Interaction1,Interaction2', 'Issue1,Issue2');
     User.create(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -46,6 +52,12 @@ userRoutes.route("/app/user/add").post(function (req, res, next) {
 
 // Update a user by id.
 userRoutes.route("/app/user/update/:id").put(function (req, res, next) {
+    //SQL Equivalent:
+    //UPDATE Profile
+    //SET favoriteLocations = 'NewFavoriteLocations',
+    //indoorIssueInteractions = 'NewIndoorIssueInteractions',
+    //indoorIssuesCreated = 'NewIndoorIssuesCreated'
+    //WHERE profile_id = SpecificProfileId;
     User.findByIdAndUpdate(req.params.id, {
         $set: req.body
     }, (error, data) => {
@@ -62,6 +74,8 @@ userRoutes.route("/app/user/update/:id").put(function (req, res, next) {
 
 // Delete a user by id.
 userRoutes.route("/app/user/delete/:id").delete((req, res, next) => {
+    //SQL Equivalent:
+    //DELETE * FROM User WHERE id = id
     User.findByIdAndRemove(req.params.id, (error, data) => {
         if (error) {
             return next(error);

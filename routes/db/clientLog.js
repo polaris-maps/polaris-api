@@ -6,10 +6,12 @@ const express = require("express");
 const clientLogRoutes = express.Router();
 
 // This will help us connect to the database
-let ClientLog = require("../../connections/clientLog");
+let ClientLog = require("../../connections/clientLog");//SQL get all client log
 
 // Get a list of all the client log records.
 clientLogRoutes.route("/app/clientLog/all").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * From ClientLog
     ClientLog.find((error, data) => {
         if (error) {
             return next(error)
@@ -21,6 +23,8 @@ clientLogRoutes.route("/app/clientLog/all").get(function (req, res, next) {
 
 // Get a single client log record by id
 clientLogRoutes.route("/app/clientLog/:id").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM ClientLog WHERE client_log_id = id
     ClientLog.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)
@@ -32,6 +36,10 @@ clientLogRoutes.route("/app/clientLog/:id").get(function (req, res, next) {
 
 // Create a new clientLog.
 clientLogRoutes.route("/app/clientLog/add").post(function (req, res, next) {
+    //SQL Equivalent:
+    //INSERT INTO ClientLog (log_timestamp, log_level, log_message, file_name, line_number, column_number, additional) 
+    //VALUES (YourLogTimestamp, 'YourLogLevel', 'YourLogMessage', 'YourFileName', YourLineNumber, YourColumnNumber, 'YourAdditionalInfo');
+
     ClientLog.create(req.body, (error, data) => {
         if (error) {
             return next(error)

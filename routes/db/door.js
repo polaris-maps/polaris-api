@@ -6,10 +6,12 @@ const express = require("express");
 const doorRoutes = express.Router();
 
 // This will help us connect to the database
-let door = require("../../connections/door");
+let door = require("../../connections/door");//SQL Connect to doors
 
 // Get a list of all the doors.
 doorRoutes.route("/app/door/all").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Door
     door.find((error, data) => {
         if (error) {
             return next(error)
@@ -21,6 +23,8 @@ doorRoutes.route("/app/door/all").get(function (req, res, next) {
 
 // Get a list of all the doors of a specific building.
 doorRoutes.route("/app/door/filtered/:buildingId").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Door WHERE building_id = id;
     door.find({ "building": req.params.buildingId }, (error, data) => {
         if (error) {
             return next(error)
@@ -32,6 +36,8 @@ doorRoutes.route("/app/door/filtered/:buildingId").get(function (req, res, next)
 
 // Get a single door by id
 doorRoutes.route("/app/door/:id").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Door WHERE door_id = id;
     door.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)
@@ -43,6 +49,9 @@ doorRoutes.route("/app/door/:id").get(function (req, res, next) {
 
 // Create a new door.
 doorRoutes.route("/app/door/add").post(function (req, res, next) {
+    //SQL Equivalent
+    //INSERT INTO Door (node_id, latitude, longitude, building_id, is_indoor, is_emergency, is_service) 
+    //VALUES (YourNodeId, YourLatitude, YourLongitude, YourBuildingId, YourIsIndoor, YourIsEmergency, YourIsService);
     door.create(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -57,6 +66,11 @@ doorRoutes.route("/app/door/add").post(function (req, res, next) {
 
 // Create multiple new doors.
 doorRoutes.route("/app/door/add/multiple").post(function (req, res, next) {
+    //SQL Equivalent
+    //INSERT INTO Door (node_id, latitude, longitude, building_id, is_indoor, is_emergency, is_service) 
+    //VALUES (YourNodeId, YourLatitude, YourLongitude, YourBuildingId, YourIsIndoor, YourIsEmergency, YourIsService);
+    //......
+    //......
     door.insertMany(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -71,6 +85,10 @@ doorRoutes.route("/app/door/add/multiple").post(function (req, res, next) {
 
 // Update an door by id.
 doorRoutes.route("/app/door/update/:id").patch(function (req, res, next) {
+    //SQL Equivalent:
+    //UPDATE Door 
+    //SET node_id = NewNodeId, latitude = NewLatitude, longitude = NewLongitude, building_id = NewBuildingId, is_indoor = NewIsIndoor, is_emergency = NewIsEmergency, is_service = NewIsService
+    //WHERE door_id = YourDoorID;
     door.findByIdAndUpdate(req.params.id, {
         $set: req.body
     }, (error, data) => {
@@ -87,6 +105,8 @@ doorRoutes.route("/app/door/update/:id").patch(function (req, res, next) {
 
 // Delete an door by id.
 doorRoutes.route("/app/door/delete/:id").delete((req, res, next) => {
+    //SQL Equivalent:
+    //DELETE * FROM Door WHERE id = id
     door.findByIdAndRemove(req.params.id, (error, data) => {
         if (error) {
             return next(error);

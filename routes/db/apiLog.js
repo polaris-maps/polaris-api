@@ -6,10 +6,12 @@ const express = require("express");
 const apiLogRoutes = express.Router();
 
 // This will help us connect to the database
-let ApiLog = require("../../connections/apiLog");
+let ApiLog = require("../../connections/apiLog"); //SQL: Get all API Log Table
 
 // Get a list of all the api log records.
 apiLogRoutes.route("/app/apiLog/all").get(function (req, res, next) {
+    //SQL Equivalent:
+    //Select * From ApiLog
     ApiLog.find((error, data) => {
         if (error) {
             return next(error)
@@ -21,6 +23,8 @@ apiLogRoutes.route("/app/apiLog/all").get(function (req, res, next) {
 
 // Get a single api log record by id
 apiLogRoutes.route("/app/apiLog/:id").get(function (req, res, next) {
+    //SQL Equivalent:
+    //Select * From ApiLog where api_log_id = id
     ApiLog.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)

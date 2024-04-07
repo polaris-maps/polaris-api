@@ -16,8 +16,8 @@ dotEnv.config({ path: "./config.env" });
 const ROUTE_IMPOSSIBLE = 500;
 
 // let IndoorIssue = require("../connections/indoorIssue");
-let outdoorIssue = require("../connections/outdoorIssue");
-let door = require("../connections/door");
+let outdoorIssue = require("../connections/outdoorIssue"); //SQL get all outdoor issues
+let door = require("../connections/door"); //SQL getting all of the doors
 
 const openRouteService = require("openrouteservice-js");
 let orsDirections = new openRouteService.Directions({ api_key: process.env.ORS_API_KEY });
@@ -69,15 +69,21 @@ function selectDoorForBuilding({
             "emergency": false
         };
         if (exclude_stairs) {
-            doorAttributes = { ...doorAttributes, "stairs": true }
+            doorAttributes = { ...doorAttributes, "stairs": true } //SQL equivalent: 
+            //SELECT Door.*
+            //FROM Door
+            //LEFT JOIN DoorsAndStairs ON Door.door_id = DoorsAndStairs.door_id
+            //WHERE DoorsAndStairs.stair_id IS NULL;
         };
         if (require_automatic) {
-            doorAttributes = { ...doorAttributes, "automatic": true }
+            doorAttributes = { ...doorAttributes, "automatic": true } //SQL stairs and automatic removed????
         };
         
         if (source && destination) {
             // Find all doors for the destination building with specified attributes
             door.find({ "building": source, ...doorAttributes }, (error, sourceDoors) => {
+                //SQL EQUIVALENT:
+                //SELECT * FROM Door WHERE building_id = SourceBuildingID;
                 if (error) {
                     reject(error);
                 } else if (sourceDoors.length < 1) {
@@ -85,8 +91,9 @@ function selectDoorForBuilding({
                     resolve({ useOriginal: true });
                 } else {
                     sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
-
                     door.find({ "building": destination, ...doorAttributes }, (error, destinationDoors) => {
+                        //SQL Equivalent:
+                        //SELECT * FROM Door WHERE building_id = DestinationBuildingID;
                         if (error) {
                             reject(error);
                         } else if (destinationDoors.length < 1) {
@@ -148,6 +155,8 @@ function selectDoorForBuilding({
         else if (destination) {
             // Find all doors for the destination building with specified attributes
             door.find({ "building": destination, ...doorAttributes }, (error, destinationDoors) => {
+                //SQL Equivalent 
+                //SELECT * FROM Door WHERE building_id = DestinationBuildingID;
                 if (error) {
                     reject(error);
                 } else if (destinationDoors.length < 1) {
@@ -253,6 +262,11 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
 
         // Get obstacle locations of relevant obstacles
         return outdoorIssue.find({ "category": { $in: adaptiveNavDataReq.avoid_obstacles } }, "avoidPolygon").exec();
+        //SQL Equivalent: 
+        //SELECT Issue.*
+        //FROM Issue
+        //JOIN IssuesAndCategories ON Issue.issue_id = IssuesAndCategories.issue_id
+        //WHERE IssuesAndCategories.category = 'YourCategory';
     })
     .then(obstacleData => {
         const avoidPolygons = obstacleData.map(obj => obj.avoidPolygon);
@@ -522,6 +536,8 @@ adaptiveNavRoutes.route("/app/route/minimize-door-distance-2").post(function (re
 
     // get all doors for source and dest buildings, and use for matrix calculations
     door.find({ "building": distanceReq.source, ...doorAttributes }, (error, sourceDoors) => {
+        //SQL EQUIVALENT:
+        //SELECT * FROM Door WHERE building_id = SourceBuildingID;
         if (error) {
             return next(error)
         } else if (sourceDoors.length < 1) {
@@ -531,6 +547,8 @@ adaptiveNavRoutes.route("/app/route/minimize-door-distance-2").post(function (re
             sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
 
             door.find({ "building": distanceReq.destination, ...doorAttributes }, (error, destinationDoors) => {
+                //SQL EQUIVALENT:
+                //SELECT * FROM Door WHERE building_id = DestinationBuildingID;
                 if (error) {
                     return next(error)
                 } else if (destinationDoors.length < 1) {
@@ -644,6 +662,8 @@ adaptiveNavRoutes.route("/app/route/to-door").post(function (req, res, next) {
 
     // Find all doors for the destination building with specified attributes
     door.find({ "building": locationReq.destination, ...doorAttributes }, (error, destinationDoors) => {
+        //SQL EQUIVALENT:
+        //SELECT * FROM Door WHERE building_id = DestinationBuildingID;
         if (error) {
             return next(error);
         } else if (destinationDoors.length < 1) {

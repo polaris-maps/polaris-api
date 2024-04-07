@@ -10,6 +10,8 @@ let outdoorIssue = require("../../connections/outdoorIssue");
 
 // Get a list of all the outdoorIssues.
 outdoorIssueRoutes.route("/app/outdoorIssue/all").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Issue
     outdoorIssue.find((error, data) => {
         if (error) {
             return next(error)
@@ -21,6 +23,10 @@ outdoorIssueRoutes.route("/app/outdoorIssue/all").get(function (req, res, next) 
 
 // Get a list of all the outdoorIssues of specific categories.
 outdoorIssueRoutes.route("/app/outdoorIssue/filtered").post(function (req, res, next) {
+    //SELECT Issue.*
+    //FROM Issue
+    //JOIN IssuesAndCategories ON Issue.issue_id = IssuesAndCategories.issue_id
+    //WHERE IssuesAndCategories.category = 'YourCategory';
     outdoorIssue.find({ "category": { $in: req.body.category } }, (error, data) => {
         if (error) {
             return next(error)
@@ -32,6 +38,8 @@ outdoorIssueRoutes.route("/app/outdoorIssue/filtered").post(function (req, res, 
 
 // Get a single outdoorIssue by id
 outdoorIssueRoutes.route("/app/outdoorIssue/:id").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Issue WHERE issue_id = id
     outdoorIssue.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)
@@ -43,6 +51,9 @@ outdoorIssueRoutes.route("/app/outdoorIssue/:id").get(function (req, res, next) 
 
 // Create a new outdoorIssue.
 outdoorIssueRoutes.route("/app/outdoorIssue/add").post(function (req, res, next) {
+    //INSERT INTO Issue (avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent)
+    // VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+    
     outdoorIssue.create(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -57,6 +68,10 @@ outdoorIssueRoutes.route("/app/outdoorIssue/add").post(function (req, res, next)
 
 // Update an outdoorIssue by id.
 outdoorIssueRoutes.route("/app/outdoorIssue/update/:id").patch(function (req, res, next) {
+    //UPDATE Issue 
+    //SET avoidPolygon = ?, location = ?, latitude = ?, longitude = ?, description = ?, status = ?, datetimeOpen = ?, datetimeClosed = ?, datetimePermanent = ?, votes = ?
+    //WHERE issue_id = id;
+
     outdoorIssue.findByIdAndUpdate(req.params.id, {
         $set: req.body
     }, (error, data) => {
@@ -73,6 +88,8 @@ outdoorIssueRoutes.route("/app/outdoorIssue/update/:id").patch(function (req, re
 
 // Delete an outdoorIssue by id.
 outdoorIssueRoutes.route("/app/outdoorIssue/delete/:id").delete((req, res, next) => {
+    //SQL Equivalent:
+    //DELETE * FROM 
     outdoorIssue.findByIdAndRemove(req.params.id, (error, data) => {
         if (error) {
             return next(error);

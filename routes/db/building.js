@@ -6,10 +6,12 @@ const express = require("express");
 const buildingRoutes = express.Router();
 
 // This will help us connect to the database
-let building = require("../../connections/building");
+let building = require("../../connections/building");//SQL Get all buildings
 
 // Get a list of all the buildings.
 buildingRoutes.route("/app/building/all").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Location
     building.find((error, data) => {
         if (error) {
             return next(error)
@@ -21,6 +23,8 @@ buildingRoutes.route("/app/building/all").get(function (req, res, next) {
 
 // Get a single building by id
 buildingRoutes.route("/app/building/:id").get(function (req, res, next) {
+    //SQL Equivalent:
+    //Select * FROM Location WHERE location_id = id
     building.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)
@@ -71,6 +75,10 @@ buildingRoutes.route("/app/building/:id").get(function (req, res, next) {
 
 // Create a new building.
 buildingRoutes.route("/app/building/add").post(function (req, res, next) {
+    //SQL Equivalent:
+    //INSERT INTO Location (full_name, abbreviation, defaultLatitude, defaultLongitude, campus_id, geo_address) 
+    //VALUES ('YourFullName', 'YourAbbreviation', YourDefaultLatitude, YourDefaultLongitude, YourCampusId, 'YourGeoAddress');
+
     building.create(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -85,6 +93,11 @@ buildingRoutes.route("/app/building/add").post(function (req, res, next) {
 
 // Create multiple new buildings.
 buildingRoutes.route("/app/building/add/multiple").post(function (req, res, next) {
+    //SQL Equivalent:
+    //INSERT INTO Location (full_name, abbreviation, defaultLatitude, defaultLongitude, campus_id, geo_address) 
+    //VALUES ('YourFullName', 'YourAbbreviation', YourDefaultLatitude, YourDefaultLongitude, YourCampusId, 'YourGeoAddress');
+    //.......
+    //.......
     building.insertMany(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -99,6 +112,8 @@ buildingRoutes.route("/app/building/add/multiple").post(function (req, res, next
 
 // Update an building by id.
 buildingRoutes.route("/app/building/update/:id").patch(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Location WHERE location_id = id
     building.findByIdAndUpdate(req.params.id, {
         $set: req.body
     }, (error, data) => {
@@ -115,6 +130,8 @@ buildingRoutes.route("/app/building/update/:id").patch(function (req, res, next)
 
 // Delete an building by id.
 buildingRoutes.route("/app/building/delete/:id").delete((req, res, next) => {
+    //SQL Equivalent:
+    //DELETE FROM Location WHERE location_id = id
     building.findByIdAndRemove(req.params.id, (error, data) => {
         if (error) {
             return next(error);

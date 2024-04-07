@@ -10,6 +10,8 @@ let ramp = require("../../connections/ramp");
 
 // Get a list of all the ramps.
 rampRoutes.route("/app/ramp/all").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Ramp;
     ramp.find((error, data) => {
         if (error) {
             return next(error)
@@ -21,6 +23,8 @@ rampRoutes.route("/app/ramp/all").get(function (req, res, next) {
 
 // Get a single ramp by id
 rampRoutes.route("/app/ramp/:id").get(function (req, res, next) {
+    //SQL Equivalent:
+    //SELECT * FROM Ramp WHERE ramp_id = id
     ramp.findById(req.params.id, (error, data) => {
         if (error) {
             return next(error)
@@ -32,6 +36,9 @@ rampRoutes.route("/app/ramp/:id").get(function (req, res, next) {
 
 // Create a new ramp.
 rampRoutes.route("/app/ramp/add").post(function (req, res, next) {
+    //SQL Equivalent:
+    //INSERT INTO Ramp (latitude, longitude, building) 
+    //VALUES (lat, long, building)
     ramp.create(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -46,6 +53,8 @@ rampRoutes.route("/app/ramp/add").post(function (req, res, next) {
 
 // Create multiple new ramps.
 rampRoutes.route("/app/ramp/add/multiple").post(function (req, res, next) {
+    //INSERT INTO Ramp (latitude, longitude, building) 
+    //VALUES (lat, long, building), (lat2, long2, build2), .....
     ramp.insertMany(req.body, (error, data) => {
         if (error) {
             return next(error)
@@ -60,6 +69,8 @@ rampRoutes.route("/app/ramp/add/multiple").post(function (req, res, next) {
 
 // Update an ramp by id.
 rampRoutes.route("/app/ramp/update/:id").patch(function (req, res, next) {
+    //UPDATE Ramp SET latitude = newLat, longitude = newLong, building = newBuilding 
+    //WHERE ramp_id = ?;
     ramp.findByIdAndUpdate(req.params.id, {
         $set: req.body
     }, (error, data) => {
@@ -76,6 +87,8 @@ rampRoutes.route("/app/ramp/update/:id").patch(function (req, res, next) {
 
 // Delete an ramp by id.
 rampRoutes.route("/app/ramp/delete/:id").delete((req, res, next) => {
+    //SQL Equivalent
+    //DELETE FROM Ramp WHERE ramp_id = ?
     ramp.findByIdAndRemove(req.params.id, (error, data) => {
         if (error) {
             return next(error);

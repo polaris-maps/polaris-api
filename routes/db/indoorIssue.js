@@ -8,6 +8,8 @@ const indoorIssueRoutes = express.Router();
 // This will help us connect to the database
 let IndoorIssue = require("../../connections/indoorIssue");
 
+
+//SQL - DID NOT UPDATE THESE SINCE OUTDOOR ISSUE WAS SAME
 // Get a list of all the indoorIssues.
 indoorIssueRoutes.route("/app/indoorIssue/all").get(function (req, res, next) {
     IndoorIssue.find((error, data) => {

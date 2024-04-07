@@ -340,34 +340,66 @@ adaptiveNavRoutes.route("/app/route/hardcoded-test2").get(function (req, res, ne
                     "smoothness_type": "good",
                     "maximum_incline": 6
                 }
-            },
-            avoid_polygons: {
-                type: 'Polygon',
-                coordinates: [
-                    [
-                        [
-                            -79.050574,
-                            35.910172
-                        ],
-                        [
-                            -79.04985,
-                            35.910457
-                        ],
-                        [
-                            -79.049587,
-                            35.909994
-                        ],
-                        [
-                            -79.050312,
-                            35.909731
-                        ],
-                        [
-                            -79.050574,
-                            35.910172
-                        ]
-                    ]
+           },
+           "avoid_polygons": {
+            "type": "MultiPolygon",
+            "coordinates": [
+              [
+                [
+                  [
+                    "-79.051700",
+                    "35.910300"
+                  ],
+                  [
+                    "-79.050900",
+                    "35.910600"
+                  ],
+                  [
+                    "-79.050600",
+                    "35.910200"
+                  ],
+                  [
+                    "-79.051400",
+                    "35.90990"
+                  ],
+                  [
+                    "-79.051700",
+                    "35.910300"
+                  ],
                 ]
-            }
+              ],
+              [
+                [
+                  [
+                    "-79.0468",
+                    "35.9112"
+                  ],
+                  [
+                    "-79.0465",
+                    "35.9112"
+                  ],
+                  [
+                    "-79.0465",
+                    "35.9109"
+                  ],
+                  [
+                    "-79.0468",
+                    "35.9109"
+                  ],
+                  [
+                    "-79.0468",
+                    "35.9112"
+                  ],
+                ]
+              ],
+              [[[-79.050574,35.910172], [-79.04985, 35.910457],[-79.049587, 35.909994],[-79.050312,35.909731],[-79.050574,35.910172]],]
+            ]
+          }
+                    //outside of gardner hall
+                    //[[-79.051700,35.910300], [-79.050900, 35.910600], [-79.050600, 35.910200], [-79.051400,35.90990], [-79.051700,35.910300]],
+                    //[[-79.050574,35.910172], [-79.04985, 35.910457],[-79.049587, 35.909994],[-79.050312,35.909731],[-79.050574,35.910172]],
+                    //connor near bus stop
+                    //[[-79.0468,35.9112], [-79.0465, 35.9112], [-79.0465, 35.9109], [-79.0468,35.9109], [-79.0468,35.9112]],
         },
         format: 'geojson'
     })
@@ -378,7 +410,6 @@ adaptiveNavRoutes.route("/app/route/hardcoded-test2").get(function (req, res, ne
             return next(err);
         });
 });
-
 // Given a start and an end building, determine the doors to use for routing, considering distance and door restrictions.
 adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req, res, next) {
     rawDistanceReq = req.body;

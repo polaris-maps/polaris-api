@@ -17,6 +17,7 @@ const rampRoutes = require("./routes/db/ramp")
 const apiLogRoutes = require("./routes/db/apiLog")
 const clientLogRoutes = require("./routes/db/clientLog")
 const adaptiveNavRoutes = require("./routes/adaptiveNav")
+const dbTestRoutes = require('./routes/dbTest');
 
 const port = process.env.PORT || 5000;
 const app = express();
@@ -55,6 +56,7 @@ app.use(rampRoutes);
 app.use(apiLogRoutes);
 app.use(clientLogRoutes);
 app.use(adaptiveNavRoutes);
+app.use(dbTestRoutes);
 
 // app.get('*', (req, res) => {
 //   res.sendFile(

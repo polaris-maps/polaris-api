@@ -2,7 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const dotEnv = require('dotenv');
 
-dotEnv.config({ path: './config.env' });  // Make sure your .env file is configured correctly
+dotEnv.config({ path: './config.env' }); 
 
 const dbTestRoutes = express.Router();
 
@@ -18,12 +18,12 @@ const pool = new Pool({
 // Route to test the database connection
 dbTestRoutes.get('/app/test-db', async (req, res, next) => {
     try {
-        const client = await pool.connect();  // try to get connection from the pool
-        const result = await client.query('SELECT NOW()');  // simple query to test the connection
-        client.release();  // release the connection back to the pool
+        const client = await pool.connect();  
+        const result = await client.query('SELECT NOW()'); 
+        client.release(); 
         res.json({
             message: 'Connected to the PostgreSQL database successfully.',
-            time: result.rows[0].now  // display the current time from the database
+            time: result.rows[0].now 
         });
     } catch (error) {
         console.error('Failed to connect to the database.', error);

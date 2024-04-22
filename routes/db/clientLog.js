@@ -6,42 +6,41 @@ const express = require("express");
 const clientLogRoutes = express.Router();
 
 // This will help us connect to the database
-let ClientLog = require("../../connections/clientLog");
+const pool = require("../../connections/building");
 
 // Get a list of all the client log records.
-clientLogRoutes.route("/app/clientLog/all").get(function (req, res, next) {
-    ClientLog.find((error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.json(data)
-        }
-    })
+clientLogRoutes.get("/app/clientlog/all", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM ClientLog');
+        res.json(rows);
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Get a single client log record by id
-clientLogRoutes.route("/app/clientLog/:id").get(function (req, res, next) {
-    ClientLog.findById(req.params.id, (error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.json(data)
-        }
-    })
+clientLogRoutes.get("/app/clientlog/:id", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM ClientLog WHERE client_log_id = id');
+        res.json(rows);
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Create a new clientLog.
-clientLogRoutes.route("/app/clientLog/add").post(function (req, res, next) {
-    ClientLog.create(req.body, (error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.status(200).json({
-                message: "successfully added client log record",
-                data: data
-            })
-        }
-    })
+clientLogRoutes.post("/app/log/add", async (req, res, next) => {
+    try {
+        // Can add current timestamp in default SQL
+        const { log_timestamp, log_level, log_message, file_name, line_number, column_number, additional } = req.body;
+        const { rows } = await pool.query(
+            'INSERT INTO ClientLog (log_timestamp, log_level, log_message, file_name, line_number, column_number, additional) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', 
+            [log_timestamp, log_level, log_message, file_name, line_number, column_number, additional]
+        );
+        res.status(201).json(rows[0]);
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = clientLogRoutes;

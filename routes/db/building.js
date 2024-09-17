@@ -1,138 +1,72 @@
 const express = require("express");
+const router = express.Router();
+const pool = require("../../connections/building");
 
-// buildingRoutes is an instance of the express router.
-// We use it to define our routes.
-// The router will be added as a middleware and will take control of requests starting with path /app/building.
-const buildingRoutes = express.Router();
-
-// This will help us connect to the database
-let building = require("../../connections/building");
-
-// Get a list of all the buildings.
-buildingRoutes.route("/app/building/all").get(function (req, res, next) {
-    building.find((error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.json(data)
-        }
-    })
+// Get a list of all the locations.
+router.get("/app/building/all", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM Location');
+        res.json(rows);
+    } catch (error) {
+        next(error);
+    }
 });
 
-// Get a single building by id
-buildingRoutes.route("/app/building/:id").get(function (req, res, next) {
-    building.findById(req.params.id, (error, data) => {
-        if (error) {
-            return next(error)
+// Get a single location by id
+router.get("/app/building/:id", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM Location WHERE location_id = $1', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
         } else {
-            res.json(data)
+            res.status(404).send('Location not found');
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
-// // Get a single building by name
-// buildingRoutes.route("/app/building/name/:name").get(function (req, res, next) {
-//     building.findOne({ name: req.params.name }, (error, data) => {
-//         if (error) {
-//             return next(error);
-//         } else {
-//             if (!data) {
-//                 res.status(404).json({
-//                     message: "Building with that name not found (404)",
-//                     name: req.params.name
-//                 });
-//                 return;
-//             }
-//             res.json(data);
-//         }
-//     });
-// });
-
-// Get buildings by name (partial match)
-// buildingRoutes.route("/app/building/name/:name").get(function (req, res, next) {
-//     const nameRegex = new RegExp(req.params.name, 'i'); 
-
-//     building.find({ name: { $regex: nameRegex } }, (error, data) => {
-//         if (error) {
-//             return next(error);
-//         } else {
-//             if (!data || data.length === 0) {
-//                 res.status(404).json({
-//                     message: "No buildings found containing the name",
-//                     name: req.params.name
-//                 });
-//                 return;
-//             }
-//             res.json(data);
-//         }
-//     });
-// });
-
-
-// Create a new building.
-buildingRoutes.route("/app/building/add").post(function (req, res, next) {
-    building.create(req.body, (error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.status(200).json({
-                message: "successfully added building",
-                data: data
-            })
-        }
-    })
+// Create a new location.
+router.post("/app/building/add", async (req, res, next) => {
+    try {
+        const { full_name, abbreviation, defaultLatitude, defaultLongitude, campus_id, geo_address } = req.body;
+        const { rows } = await pool.query('INSERT INTO Location (full_name, abbreviation, defaultLatitude, defaultLongitude, campus_id, geo_address) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', [full_name, abbreviation, defaultLatitude, defaultLongitude, campus_id, geo_address]);
+        res.status(201).json(rows[0]);
+    } catch (error) {
+        next(error);
+    }
 });
 
-// Create multiple new buildings.
-buildingRoutes.route("/app/building/add/multiple").post(function (req, res, next) {
-    building.insertMany(req.body, (error, data) => {
-        if (error) {
-            return next(error)
+// Update a location by id.
+router.patch("/app/building/update/:id", async (req, res, next) => {
+    try {
+        const keys = Object.keys(req.body);
+        const values = Object.values(req.body);
+        const setClause = keys.map((key, index) => `${key} = $${index + 2}`).join(', ');
+
+        const { rows } = await pool.query(`UPDATE Location SET ${setClause} WHERE location_id = $1 RETURNING *`, [req.params.id, ...values]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
         } else {
-            res.status(200).json({
-                message: "successfully added multiple buildings",
-                data: data
-            })
+            res.status(404).send('Location not found');
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
-// Update an building by id.
-buildingRoutes.route("/app/building/update/:id").patch(function (req, res, next) {
-    building.findByIdAndUpdate(req.params.id, {
-        $set: req.body
-    }, (error, data) => {
-        if (error) {
-            return next(error);
+// Delete a location by id.
+router.delete("/app/building/delete/:id", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('DELETE FROM Location WHERE location_id = $1 RETURNING *', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
         } else {
-            res.status(200).json({
-                message: "successfully updated building",
-                oldData: data
-            })
+            res.status(404).send('Location not found');
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
-// Delete an building by id.
-buildingRoutes.route("/app/building/delete/:id").delete((req, res, next) => {
-    building.findByIdAndRemove(req.params.id, (error, data) => {
-        if (error) {
-            return next(error);
-        } else {
-            if (!data) {
-                res.status(404).json({
-                    message: "building of that id was not found (404)",
-                    id: req.params.id
-                })
-                return;
-            }
-
-            res.status(200).json({
-                message: "successfully deleted building",
-                data: data
-            })
-        }
-    })
-});
-
-module.exports = buildingRoutes;
+module.exports = router;

@@ -6,80 +6,98 @@ const express = require("express");
 const userRoutes = express.Router();
 
 // This will help us connect to the database
-let User = require("../../connections/user");
+const pool = require("../../connections/building");
 
 // Get a list of all the users.
-userRoutes.route("/app/user/all").get(function (req, res, next) {
-    User.find((error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.json(data)
-        }
-    })
+userRoutes.route("/app/user/all").get(async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM Profile');
+        res.json(rows);
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Get a single user by id
-userRoutes.route("/app/user/:id").get(function (req, res, next) {
-    User.findById(req.params.id, (error, data) => {
-        if (error) {
-            return next(error)
+userRoutes.route("/app/user/:id").get(async (req, res, next) => {
+    try {
+        const profileId = req.params.id;
+        const { rows } = await pool.query('SELECT * FROM Profile WHERE profile_id = $1', [profileId]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
         } else {
-            res.json(data)
+            res.status(404).json({ message: "Profile not found" });
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Create a new user.
-userRoutes.route("/app/user/add").post(function (req, res, next) {
-    User.create(req.body, (error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.status(200).json({
-                message: "successfully added user",
-                data: data
-            })
-        }
-    })
+userRoutes.route("/app/user/add").post(async (req, res, next) => {
+    const { favoriteLocations, indoorIssueInteractions, indoorIssuesCreated } = req.body;
+    const queryText = `
+        INSERT INTO Profile (favoriteLocations, indoorIssueInteractions, indoorIssuesCreated)
+        VALUES ($1, $2, $3)
+        RETURNING *;
+    `;
+    
+    try {
+        const { rows } = await pool.query(queryText, [favoriteLocations, indoorIssueInteractions, indoorIssuesCreated]);
+        res.status(200).json({
+            message: "Successfully added profile",
+            data: rows[0]
+        });
+    } catch (error) {
+        next(error);
+    }
 });
-
 // Update a user by id.
-userRoutes.route("/app/user/update/:id").put(function (req, res, next) {
-    User.findByIdAndUpdate(req.params.id, {
-        $set: req.body
-    }, (error, data) => {
-        if (error) {
-            return next(error);
-        } else {
+userRoutes.route("/app/user/update/:id").put(async (req, res, next) => {
+    const profileId = req.params.id;
+    const updates = req.body;
+    const keys = Object.keys(updates);
+    const values = Object.values(updates);
+    const setClause = keys.map((key, index) => `"${key}" = $${index + 2}`).join(', ');
+
+    const queryText = `UPDATE Profile SET ${setClause} WHERE profile_id = $1 RETURNING *`;
+
+    try {
+        const { rows } = await pool.query(queryText, [profileId, ...values]);
+        if (rows.length > 0) {
             res.status(200).json({
-                message: "successfully updated user",
-                oldData: data
-            })
+                message: "Successfully updated profile",
+                data: rows[0]
+            });
+        } else {
+            res.status(404).json({ message: "Profile not found" });
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Delete a user by id.
-userRoutes.route("/app/user/delete/:id").delete((req, res, next) => {
-    User.findByIdAndRemove(req.params.id, (error, data) => {
-        if (error) {
-            return next(error);
-        } else {
-            if (!data) {
-                res.status(404).json({
-                    message: "user of that id was not found (404)",
-                    id: req.params.id
-                })
-                return;
-            }
+userRoutes.route("/app/user/delete/:id").delete(async (req, res, next) => {
+    const profileId = req.params.id;
+    const queryText = 'DELETE FROM Profile WHERE profile_id = $1 RETURNING *';
 
+    try {
+        const { rows } = await pool.query(queryText, [profileId]);
+        if (rows.length > 0) {
             res.status(200).json({
-                message: "successfully deleted user",
-                data: data
-            })
+                message: "Successfully deleted profile",
+                data: rows[0]
+            });
+        } else {
+            res.status(404).json({
+                message: "Profile not found",
+                id: profileId
+            });
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = userRoutes;

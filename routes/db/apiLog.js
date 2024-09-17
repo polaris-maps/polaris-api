@@ -6,28 +6,26 @@ const express = require("express");
 const apiLogRoutes = express.Router();
 
 // This will help us connect to the database
-let ApiLog = require("../../connections/apiLog");
+const pool = require("../../connections/building");
 
 // Get a list of all the api log records.
-apiLogRoutes.route("/app/apiLog/all").get(function (req, res, next) {
-    ApiLog.find((error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.json(data)
-        }
-    })
+apiLogRoutes.get("/app/apiLog/all", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('Select * From ApiLog');
+        res.json(rows);
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Get a single api log record by id
-apiLogRoutes.route("/app/apiLog/:id").get(function (req, res, next) {
-    ApiLog.findById(req.params.id, (error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.json(data)
-        }
-    })
+apiLogRoutes.get("/app/apiLog/:id", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('Select * From ApiLog where api_log_id = id');
+        res.json(rows);
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = apiLogRoutes;

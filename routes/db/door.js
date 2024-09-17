@@ -6,105 +6,130 @@ const express = require("express");
 const doorRoutes = express.Router();
 
 // This will help us connect to the database
-let door = require("../../connections/door");
+const pool = require("../../connections/building");
 
 // Get a list of all the doors.
-doorRoutes.route("/app/door/all").get(function (req, res, next) {
-    door.find((error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.json(data)
-        }
-    })
+doorRoutes.get("/app/door/all", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM Door');
+        res.json(rows);
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Get a list of all the doors of a specific building.
-doorRoutes.route("/app/door/filtered/:buildingId").get(function (req, res, next) {
-    door.find({ "building": req.params.buildingId }, (error, data) => {
-        if (error) {
-            return next(error)
+doorRoutes.get("/app/door/filtered/:buildingId", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM Door WHERE building_id = id', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
         } else {
-            res.json(data)
+            res.status(404).send('Location not found');
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Get a single door by id
-doorRoutes.route("/app/door/:id").get(function (req, res, next) {
-    door.findById(req.params.id, (error, data) => {
-        if (error) {
-            return next(error)
+doorRoutes.get("/app/door/filtered/:buildingId", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM Door WHERE door_id = id', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
         } else {
-            res.json(data)
+            res.status(404).send('Location not found');
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Create a new door.
-doorRoutes.route("/app/door/add").post(function (req, res, next) {
-    door.create(req.body, (error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.status(200).json({
-                message: "successfully added door",
-                data: data
-            })
-        }
-    })
+doorRoutes.post("/app/door/add", async (req, res, next) => {
+    try {
+        const { node_id, latitude, longitude, building_id, is_indoor, is_emergency, is_service } = req.body;
+        const queryText = `
+            INSERT INTO Door (node_id, latitude, longitude, building_id, is_indoor, is_emergency, is_service) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) 
+            RETURNING *
+        `;
+        const values = [node_id, latitude, longitude, building_id, is_indoor, is_emergency, is_service];
+        const { rows } = await pool.query(queryText, values);
+        res.status(201).json(rows[0]);
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Create multiple new doors.
-doorRoutes.route("/app/door/add/multiple").post(function (req, res, next) {
-    door.insertMany(req.body, (error, data) => {
-        if (error) {
-            return next(error)
-        } else {
-            res.status(200).json({
-                message: "successfully added multiple doors",
-                data: data
-            })
-        }
-    })
+doorRoutes.post("/app/door/add/multiple", async (req, res, next) => {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN'); 
+        const insertPromises = req.body.map(door => {
+            const { node_id, latitude, longitude, building_id, is_indoor, is_emergency, is_service } = door;
+            const queryText = `
+                INSERT INTO Door (node_id, latitude, longitude, building_id, is_indoor, is_emergency, is_service)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                RETURNING *;
+            `;
+            return client.query(queryText, [node_id, latitude, longitude, building_id, is_indoor, is_emergency, is_service]);
+        });
+
+        const results = await Promise.all(insertPromises);
+        await client.query('COMMIT'); 
+
+        const insertedDoors = results.map(result => result.rows[0]);
+        res.status(200).json({
+            message: "Successfully added multiple doors",
+            data: insertedDoors
+        });
+    } catch (error) {
+        await client.query('ROLLBACK'); 
+        next(error);
+    } finally {
+        client.release(); 
+    }
 });
 
-// Update an door by id.
-doorRoutes.route("/app/door/update/:id").patch(function (req, res, next) {
-    door.findByIdAndUpdate(req.params.id, {
-        $set: req.body
-    }, (error, data) => {
-        if (error) {
-            return next(error);
-        } else {
+doorRoutes.patch("/app/door/update/:id", async (req, res, next) => {
+    try {
+        const doorId = req.params.id;
+        const updates = req.body;
+        const keys = Object.keys(updates);
+        const values = Object.values(updates);
+
+        const setClause = keys.map((key, index) => `"${key}" = $${index + 2}`).join(', ');
+        const queryText = `UPDATE Door SET ${setClause} WHERE door_id = $1 RETURNING *`;
+
+        const { rows } = await pool.query(queryText, [doorId, ...values]);
+        if (rows.length > 0) {
             res.status(200).json({
-                message: "successfully updated door",
-                oldData: data
-            })
+                message: "Successfully updated door",
+                data: rows[0]
+            });
+        } else {
+            res.status(404).json({ message: "Door not found" });
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Delete an door by id.
-doorRoutes.route("/app/door/delete/:id").delete((req, res, next) => {
-    door.findByIdAndRemove(req.params.id, (error, data) => {
-        if (error) {
-            return next(error);
+doorRoutes.delete("/app/door/delete/:id", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('DELETE FROM Location WHERE location_id = $1 RETURNING *', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
         } else {
-            if (!data) {
-                res.status(404).json({
-                    message: "door of that id was not found (404)",
-                    id: req.params.id
-                })
-                return;
-            }
-
-            res.status(200).json({
-                message: "successfully deleted door",
-                data: data
-            })
+            res.status(404).send('Location not found');
         }
-    })
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = doorRoutes;

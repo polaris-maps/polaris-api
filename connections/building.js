@@ -1,11 +1,8 @@
-const dotEnv = require("dotenv");
-dotEnv.config({ path: "./config.env" });
-const mongoose = require("mongoose");
+const { Pool } = require('pg');
+require("dotenv").config({ path: "./config.env" });
 
-const buildingSchema = require("../schemas/building")
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URI
+});
 
-var conn = mongoose.createConnection(process.env.ATLAS_URI_CAMPUSES);
-
-var buildingConnection = conn.model('building', buildingSchema);
-
-module.exports = buildingConnection
+module.exports = pool;

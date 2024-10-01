@@ -9,7 +9,6 @@ dotEnv.config({ path: "./config.env" });
 const apiLogger = require("./apiLogger")
 
 const indoorIssueRoutes = require("./routes/db/indoorIssue")
-const outdoorIssueRoutes = require("./routes/db/outdoorIssue")
 const userRoutes = require("./routes/db/user")
 const buildingRoutes = require("./routes/db/building")
 const doorRoutes = require("./routes/db/door")

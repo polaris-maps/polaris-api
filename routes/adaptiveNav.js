@@ -16,7 +16,7 @@ dotEnv.config({ path: "./config.env" });
 const ROUTE_IMPOSSIBLE = 500;
 
 // let IndoorIssue = require("../connections/indoorIssue");
-let door = require("../connections/door");
+let door = require("./db/door");
 
 const openRouteService = require("openrouteservice-js");
 const indoorIssueRoutes = require("./db/indoorIssue");

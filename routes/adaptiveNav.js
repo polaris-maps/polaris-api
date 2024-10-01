@@ -16,10 +16,10 @@ dotEnv.config({ path: "./config.env" });
 const ROUTE_IMPOSSIBLE = 500;
 
 // let IndoorIssue = require("../connections/indoorIssue");
-let outdoorIssue = require("../connections/outdoorIssue");
 let door = require("../connections/door");
 
 const openRouteService = require("openrouteservice-js");
+const indoorIssueRoutes = require("./db/indoorIssue");
 let orsDirections = new openRouteService.Directions({ api_key: process.env.ORS_API_KEY });
 let orsMatrix = new openRouteService.Matrix({ api_key: process.env.ORS_API_KEY })
 
@@ -252,7 +252,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
         }
 
         // Get obstacle locations of relevant obstacles
-        return outdoorIssue.find({ "category": { $in: adaptiveNavDataReq.avoid_obstacles } }, "avoidPolygon").exec();
+        return indoorIssueRoutes.find({ "category": { $in: adaptiveNavDataReq.avoid_obstacles } }, "avoidPolygon").exec();
     })
     .then(obstacleData => {
         const avoidPolygons = obstacleData.map(obj => obj.avoidPolygon);

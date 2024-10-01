@@ -47,7 +47,6 @@ app.use(apiLogger);
 
 // Routes
 app.use(indoorIssueRoutes);
-app.use(outdoorIssueRoutes);
 app.use(userRoutes);
 app.use(buildingRoutes);
 app.use(doorRoutes);

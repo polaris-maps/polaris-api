@@ -6,7 +6,7 @@ const express = require("express");
 const clientLogRoutes = express.Router();
 
 // This will help us connect to the database
-const pool = require("../../connections/building");
+const pool = require("../../connections/pool");
 
 // Get a list of all the client log records.
 clientLogRoutes.get("/app/clientlog/all", async (req, res, next) => {

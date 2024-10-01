@@ -6,7 +6,7 @@ const express = require("express");
 const rampRoutes = express.Router();
 
 // This will help us connect to the database
-const pool = require("../../connections/building");
+const pool = require("../../connections/pool");
 
 // Get a list of all the ramps.
 rampRoutes.route("/app/ramp/all").get(async (req, res, next) => {

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../../connections/building");
+const pool = require("../../connections/pool");
 
 // Get a list of all the locations.
 router.get("/app/building/all", async (req, res, next) => {

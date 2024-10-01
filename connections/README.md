@@ -1,5 +1,5 @@
 # connections
 
-Connections to the MongoDB databases.
+Connection to the Postgres DB
 
 TBD: If apiLog and clientLog should become one file.

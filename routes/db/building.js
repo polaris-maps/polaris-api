@@ -1,6 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../../connections/pool");
+const pg = require('pg');
+const types = pg.types;
+
+types.setTypeParser(1700, function (val){
+  return val === null ? null : parseFloat(val);
+});
 
 // Get a list of all the locations.
 router.get("/app/building/all", async (req, res, next) => {

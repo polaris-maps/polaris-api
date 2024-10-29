@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 
 // indoorIssueRoutes is an instance of the express router.
 // We use it to define our routes.
@@ -54,16 +55,16 @@ indoorIssueRoutes.get("/app/indoorIssue/:id", async (req, res, next) => {
 
 // Create a new indoorIssue.
 indoorIssueRoutes.route("/app/indoorIssue/add").post(async (req, res, next) => {
-    const { avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent, votes } = req.body;
-
+    const { avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent, votes, image } = req.body;
+    
     const queryText = `
-        INSERT INTO Issue(avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent, votes)
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        INSERT INTO Issue(avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent, votes, image)
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *;
     `;
 
     try {
-        const { rows } = await pool.query(queryText, [avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent, votes || 0]);
+        const { rows } = await pool.query(queryText, [avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent, votes || 0, image]);
         res.status(200).json({
             message: "Successfully added indoor issue",
             data: rows[0]
@@ -97,6 +98,7 @@ indoorIssueRoutes.route("/app/indoorIssue/update/:id").patch(async (req, res, ne
         next(error);
     }
 });
+
 // Delete an indoorIssue by id.
 indoorIssueRoutes.route("/app/indoorIssue/delete/:id").delete(async (req, res, next) => {
     const issueId = req.params.id;

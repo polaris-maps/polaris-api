@@ -1,5 +1,4 @@
 const express = require("express");
-const multer = require("multer");
 
 // indoorIssueRoutes is an instance of the express router.
 // We use it to define our routes.

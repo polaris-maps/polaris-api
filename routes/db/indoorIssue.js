@@ -38,24 +38,11 @@ indoorIssueRoutes.route("/app/indoorIssue/filtered").post(async (req, res, next)
     }
 });
 
-// Get a single indoorIssue by id
-indoorIssueRoutes.get("/app/indoorIssue/:id", async (req, res, next) => {
-    try {
-        const { rows } = await pool.query('SELECT * FROM Issue WHERE issue_id = $1', [req.params.id]);
-        if (rows.length > 0) {
-            res.json(rows[0]);
-        } else {
-            res.status(404).send('Issue not found');
-        }
-    } catch (error) {
-        next(error);
-    }
-});
 
 // Create a new indoorIssue.
 indoorIssueRoutes.route("/app/indoorIssue/add").post(async (req, res, next) => {
     const { avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent, votes, image } = req.body;
-    
+
     const queryText = `
         INSERT INTO Issue(avoidPolygon, location, latitude, longitude, description, status, datetimeOpen, datetimeClosed, datetimePermanent, votes, image)
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
@@ -68,6 +55,20 @@ indoorIssueRoutes.route("/app/indoorIssue/add").post(async (req, res, next) => {
             message: "Successfully added indoor issue",
             data: rows[0]
         });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Get a single indoorIssue by id
+indoorIssueRoutes.get("/app/indoorIssue/:id", async (req, res, next) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM Issue WHERE issue_id = $1', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).send('Issue not found');
+        }
     } catch (error) {
         next(error);
     }

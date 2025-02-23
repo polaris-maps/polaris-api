@@ -61,7 +61,7 @@ indoorIssueRoutes.route("/app/indoorIssue/add").post(async (req, res, next) => {
 });
 
 // Get a single indoorIssue by id
-indoorIssueRoutes.get("/app/indoorIssue/:id", async (req, res, next) => {
+indoorIssueRoutes.get("/app/indoorIssue/get/:id", async (req, res, next) => {
     try {
         const { rows } = await pool.query('SELECT * FROM Issue WHERE issue_id = $1', [req.params.id]);
         if (rows.length > 0) {

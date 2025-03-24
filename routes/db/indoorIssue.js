@@ -41,9 +41,9 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
     INSERT INTO Issue(
       avoidPolygon, location, latitude, longitude, description,
       status, datetimeOpen, datetimeClosed, datetimePermanent,
-      votes, image, categories
+      votes, image, categories, qna
     )
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     RETURNING *;
   `;
 

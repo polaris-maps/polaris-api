@@ -34,7 +34,7 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
     const {
         avoidPolygon, location, latitude, longitude, description,
         status, datetimeOpen, datetimeClosed, datetimePermanent,
-        votes, image, categories
+        votes, image, categories, qna
     } = req.body;
 
     const queryText = `
@@ -51,7 +51,7 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
         const { rows } = await pool.query(queryText, [
             avoidPolygon, location, latitude, longitude, description,
             status, datetimeOpen, datetimeClosed, datetimePermanent,
-            votes || 0, image, categories
+            votes || 0, image, categories, qna
         ]);
         res.status(200).json({
             message: "Successfully added indoor issue",

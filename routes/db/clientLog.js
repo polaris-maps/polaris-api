@@ -7,6 +7,7 @@ const clientLogRoutes = express.Router();
 
 // This will help us connect to the database
 const pool = require("../../connections/pool");
+const { censorAllProfanity } = require("../../utils/profanityFilter");
 
 // Get a list of all the client log records.
 clientLogRoutes.get("/app/clientlog/all", async (req, res, next) => {
@@ -31,11 +32,14 @@ clientLogRoutes.get("/app/clientlog/:id", async (req, res, next) => {
 // Create a new clientLog.
 clientLogRoutes.post("/app/log/add", async (req, res, next) => {
     try {
-        // Can add current timestamp in default SQL
         const { log_timestamp, log_level, log_message, file_name, line_number, column_number, additional } = req.body;
+        
+        const filteredLogMessage = log_message ? censorAllProfanity(log_message) : log_message;
+        const filteredAdditional = additional ? censorAllProfanity(additional) : additional;
+        
         const { rows } = await pool.query(
             'INSERT INTO ClientLog (log_timestamp, log_level, log_message, file_name, line_number, column_number, additional) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', 
-            [log_timestamp, log_level, log_message, file_name, line_number, column_number, additional]
+            [log_timestamp, log_level, filteredLogMessage, file_name, line_number, column_number, filteredAdditional]
         );
         res.status(201).json(rows[0]);
     } catch (error) {

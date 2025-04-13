@@ -1,6 +1,7 @@
 const express = require("express");
 const indoorIssueRoutes = express.Router();
 const pool = require("../../connections/pool");
+const { censorAllProfanity } = require("../../utils/profanityFilter");
 
 // Get all indoor issues.
 indoorIssueRoutes.get("/app/indoorIssue/all", async (req, res, next) => {
@@ -37,6 +38,10 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
         votes, image, categories, qna
     } = req.body;
 
+    const filteredLocation = location ? censorAllProfanity(location) : location;
+    const filteredDescription = description ? censorAllProfanity(description) : description;
+    const filteredQna = qna ? censorAllProfanity(qna) : qna;
+
     const queryText = `
     INSERT INTO Issue(
       avoidPolygon, location, latitude, longitude, description,
@@ -49,9 +54,9 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
 
     try {
         const { rows } = await pool.query(queryText, [
-            avoidPolygon, location, latitude, longitude, description,
+            avoidPolygon, filteredLocation, latitude, longitude, filteredDescription,
             status, datetimeOpen, datetimeClosed, datetimePermanent,
-            votes || 0, image, categories, qna
+            votes || 0, image, categories, filteredQna
         ]);
         res.status(200).json({
             message: "Successfully added indoor issue",
@@ -80,6 +85,17 @@ indoorIssueRoutes.get("/app/indoorIssue/get/:id", async (req, res, next) => {
 indoorIssueRoutes.patch("/app/indoorIssue/update/:id", async (req, res, next) => {
     const issueId = req.params.id;
     const updates = req.body;
+    
+    if (updates.location) {
+        updates.location = censorAllProfanity(updates.location);
+    }
+    if (updates.description) {
+        updates.description = censorAllProfanity(updates.description);
+    }
+    if (updates.qna) {
+        updates.qna = censorAllProfanity(updates.qna);
+    }
+    
     const keys = Object.keys(updates);
     const values = Object.values(updates);
     const setClause = keys.map((key, i) => `"${key}" = $${i + 2}`).join(', ');

@@ -2,12 +2,13 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 const dotEnv = require("dotenv");
 dotEnv.config({ path: "./config.env" });
 
 const apiLogger = require("./apiLogger")
-
 const indoorIssueRoutes = require("./routes/db/indoorIssue")
 const userRoutes = require("./routes/db/user")
 const buildingRoutes = require("./routes/db/building")
@@ -23,6 +24,16 @@ const app = express();
 const HTTP_STATUS_OK = 200;
 const HTTP_STATUS_NOT_FOUND = 404;
 
+app.use(helmet());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
 app.use(
   bodyParser.urlencoded({
       extended: false,
@@ -30,7 +41,6 @@ app.use(
 );
 app.use(express.json());
 app.use(cors());
-
 
 // Static directory path
 // app.use(express.static(path.join(__dirname, 'dist/polaris'))) // TODO: fix

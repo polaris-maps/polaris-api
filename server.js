@@ -18,7 +18,7 @@ const apiLogRoutes = require("./routes/db/apiLog")
 const clientLogRoutes = require("./routes/db/clientLog")
 const adaptiveNavRoutes = require("./routes/adaptiveNav")
 const dbTestRoutes = require('./routes/dbTest');
-
+const imageRoutes = require("./routes/db/image")
 const port = process.env.PORT || 5000;
 const app = express();
 const HTTP_STATUS_OK = 200;
@@ -65,7 +65,7 @@ app.use(apiLogRoutes);
 app.use(clientLogRoutes);
 app.use(adaptiveNavRoutes);
 app.use(dbTestRoutes);
-
+app.use(imageRoutes)
 // app.get('*', (req, res) => {
 //   res.sendFile(
 //       path.join(__dirname, 'dist/polaris/index.html'),

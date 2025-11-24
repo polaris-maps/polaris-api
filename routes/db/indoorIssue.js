@@ -1,9 +1,9 @@
-const express = require("express");
+const express = require('express');
 const indoorIssueRoutes = express.Router();
-const pool = require("../../connections/pool");
+const pool = require('../../connections/pool');
 
 // Get all indoor issues.
-indoorIssueRoutes.get("/app/indoorIssue/all", async (req, res, next) => {
+indoorIssueRoutes.get('/app/indoorIssue/all', async (req, res, next) => {
     try {
         const { rows } = await pool.query('SELECT * FROM Issue');
         res.json(rows);
@@ -13,7 +13,7 @@ indoorIssueRoutes.get("/app/indoorIssue/all", async (req, res, next) => {
 });
 
 // Filter indoor issues by categories.
-indoorIssueRoutes.post("/app/indoorIssue/filtered", async (req, res, next) => {
+indoorIssueRoutes.post('/app/indoorIssue/filtered', async (req, res, next) => {
     try {
         const categories = req.body.category; // expecting an array of strings
         const placeholders = categories.map((_, i) => `$${i + 1}`).join(', ');
@@ -30,7 +30,7 @@ indoorIssueRoutes.post("/app/indoorIssue/filtered", async (req, res, next) => {
 });
 
 // Create a new indoor issue with categories.
-indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
+indoorIssueRoutes.post('/app/indoorIssue/add', async (req, res, next) => {
     const {
         avoidPolygon, location, latitude, longitude, description,
         status, datetimeOpen, datetimeClosed, datetimePermanent,
@@ -54,7 +54,7 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
             votes || 0, image, categories, qna
         ]);
         res.status(200).json({
-            message: "Successfully added indoor issue",
+            message: 'Successfully added indoor issue',
             data: rows[0]
         });
     } catch (error) {
@@ -63,7 +63,7 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
 });
 
 // Get a single indoor issue by id.
-indoorIssueRoutes.get("/app/indoorIssue/get/:id", async (req, res, next) => {
+indoorIssueRoutes.get('/app/indoorIssue/get/:id', async (req, res, next) => {
     try {
         const { rows } = await pool.query('SELECT * FROM Issue WHERE issue_id = $1', [req.params.id]);
         if (rows.length) {
@@ -77,7 +77,7 @@ indoorIssueRoutes.get("/app/indoorIssue/get/:id", async (req, res, next) => {
 });
 
 // Update an indoor issue by id.
-indoorIssueRoutes.patch("/app/indoorIssue/update/:id", async (req, res, next) => {
+indoorIssueRoutes.patch('/app/indoorIssue/update/:id', async (req, res, next) => {
     const issueId = req.params.id;
     const updates = req.body;
     const keys = Object.keys(updates);
@@ -89,11 +89,11 @@ indoorIssueRoutes.patch("/app/indoorIssue/update/:id", async (req, res, next) =>
         const { rows } = await pool.query(queryText, [issueId, ...values]);
         if (rows.length) {
             res.status(200).json({
-                message: "Successfully updated indoor issue",
+                message: 'Successfully updated indoor issue',
                 data: rows[0]
             });
         } else {
-            res.status(404).json({ message: "Indoor issue not found" });
+            res.status(404).json({ message: 'Indoor issue not found' });
         }
     } catch (error) {
         next(error);
@@ -101,7 +101,7 @@ indoorIssueRoutes.patch("/app/indoorIssue/update/:id", async (req, res, next) =>
 });
 
 // Delete an indoor issue by id.
-indoorIssueRoutes.delete("/app/indoorIssue/delete/:id", async (req, res, next) => {
+indoorIssueRoutes.delete('/app/indoorIssue/delete/:id', async (req, res, next) => {
     const issueId = req.params.id;
     const queryText = `DELETE FROM Issue WHERE issue_id = $1 RETURNING *`;
 
@@ -109,11 +109,11 @@ indoorIssueRoutes.delete("/app/indoorIssue/delete/:id", async (req, res, next) =
         const { rows } = await pool.query(queryText, [issueId]);
         if (rows.length) {
             res.status(200).json({
-                message: "Successfully deleted indoor issue",
+                message: 'Successfully deleted indoor issue',
                 data: rows[0]
             });
         } else {
-            res.status(404).json({ message: "Indoor issue not found", id: issueId });
+            res.status(404).json({ message: 'Indoor issue not found', id: issueId });
         }
     } catch (error) {
         next(error);

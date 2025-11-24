@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 
 // userRoutes is an instance of the express router.
 // We use it to define our routes.
@@ -6,10 +6,10 @@ const express = require("express");
 const userRoutes = express.Router();
 
 // This will help us connect to the database
-const pool = require("../../connections/pool");
+const pool = require('../../connections/pool');
 
 // Get a list of all the users.
-userRoutes.route("/app/user/all").get(async (req, res, next) => {
+userRoutes.route('/app/user/all').get(async (req, res, next) => {
     try {
         const { rows } = await pool.query('SELECT * FROM Profile');
         res.json(rows);
@@ -19,14 +19,14 @@ userRoutes.route("/app/user/all").get(async (req, res, next) => {
 });
 
 // Get a single user by id
-userRoutes.route("/app/user/:id").get(async (req, res, next) => {
+userRoutes.route('/app/user/:id').get(async (req, res, next) => {
     try {
         const profileId = req.params.id;
         const { rows } = await pool.query('SELECT * FROM Profile WHERE profile_id = $1', [profileId]);
         if (rows.length > 0) {
             res.json(rows[0]);
         } else {
-            res.status(404).json({ message: "Profile not found" });
+            res.status(404).json({ message: 'Profile not found' });
         }
     } catch (error) {
         next(error);
@@ -34,18 +34,18 @@ userRoutes.route("/app/user/:id").get(async (req, res, next) => {
 });
 
 // Create a new user.
-userRoutes.route("/app/user/add").post(async (req, res, next) => {
+userRoutes.route('/app/user/add').post(async (req, res, next) => {
     const { favoriteLocations, indoorIssueInteractions, indoorIssuesCreated } = req.body;
     const queryText = `
         INSERT INTO Profile (favoriteLocations, indoorIssueInteractions, indoorIssuesCreated)
         VALUES ($1, $2, $3)
         RETURNING *;
     `;
-    
+
     try {
         const { rows } = await pool.query(queryText, [favoriteLocations, indoorIssueInteractions, indoorIssuesCreated]);
         res.status(200).json({
-            message: "Successfully added profile",
+            message: 'Successfully added profile',
             data: rows[0]
         });
     } catch (error) {
@@ -53,7 +53,7 @@ userRoutes.route("/app/user/add").post(async (req, res, next) => {
     }
 });
 // Update a user by id.
-userRoutes.route("/app/user/update/:id").put(async (req, res, next) => {
+userRoutes.route('/app/user/update/:id').put(async (req, res, next) => {
     const profileId = req.params.id;
     const updates = req.body;
     const keys = Object.keys(updates);
@@ -66,11 +66,11 @@ userRoutes.route("/app/user/update/:id").put(async (req, res, next) => {
         const { rows } = await pool.query(queryText, [profileId, ...values]);
         if (rows.length > 0) {
             res.status(200).json({
-                message: "Successfully updated profile",
+                message: 'Successfully updated profile',
                 data: rows[0]
             });
         } else {
-            res.status(404).json({ message: "Profile not found" });
+            res.status(404).json({ message: 'Profile not found' });
         }
     } catch (error) {
         next(error);
@@ -78,7 +78,7 @@ userRoutes.route("/app/user/update/:id").put(async (req, res, next) => {
 });
 
 // Delete a user by id.
-userRoutes.route("/app/user/delete/:id").delete(async (req, res, next) => {
+userRoutes.route('/app/user/delete/:id').delete(async (req, res, next) => {
     const profileId = req.params.id;
     const queryText = 'DELETE FROM Profile WHERE profile_id = $1 RETURNING *';
 
@@ -86,12 +86,12 @@ userRoutes.route("/app/user/delete/:id").delete(async (req, res, next) => {
         const { rows } = await pool.query(queryText, [profileId]);
         if (rows.length > 0) {
             res.status(200).json({
-                message: "Successfully deleted profile",
+                message: 'Successfully deleted profile',
                 data: rows[0]
             });
         } else {
             res.status(404).json({
-                message: "Profile not found",
+                message: 'Profile not found',
                 id: profileId
             });
         }

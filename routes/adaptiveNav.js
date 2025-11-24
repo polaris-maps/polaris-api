@@ -1,52 +1,54 @@
-const {
-    PermanentFeature,
-    Surface,
-    Track,
-    Smoothness,
-    Obstacle,
-    Restrictions,
-    AdaptiveNavRouteRequest,
-    DoorDistanceRequest
-} = require("./types");
+// Types imported for JSDoc annotations
+// const {
+//     PermanentFeature,
+//     Surface,
+//     Track,
+//     Smoothness,
+//     Obstacle,
+//     Restrictions,
+//     AdaptiveNavRouteRequest,
+//     DoorDistanceRequest
+// } = require('./types');
 
-const express = require("express");
-const dotEnv = require("dotenv");
-dotEnv.config({ path: "./config.env" });
+const express = require('express');
+const dotEnv = require('dotenv');
+dotEnv.config({ path: './config.env' });
 
 const ROUTE_IMPOSSIBLE = 500;
 
 // let IndoorIssue = require("../connections/indoorIssue");
-let door = require("./db/door");
+const door = require('./db/door');
+const pool = require('../connections/pool');
 
-const openRouteService = require("openrouteservice-js");
-const indoorIssueRoutes = require("./db/indoorIssue");
-let orsDirections = new openRouteService.Directions({ api_key: process.env.ORS_API_KEY });
-let orsMatrix = new openRouteService.Matrix({ api_key: process.env.ORS_API_KEY })
+const openRouteService = require('openrouteservice-js');
+// const indoorIssueRoutes = require('./db/indoorIssue');
+const orsDirections = new openRouteService.Directions({ api_key: process.env.ORS_API_KEY });
+const orsMatrix = new openRouteService.Matrix({ api_key: process.env.ORS_API_KEY });
 
 // TODO: customize defaults
 const defaultAdaptiveNav = {
-    avoid_features: ["steps"], // avoid steps by default
+    avoid_features: ['steps'], // avoid steps by default
     avoid_obstacles: [],
     restrictions: {
-        "surface_type": "cobblestone:flattened",
-        "track_type": "grade1",
-        "smoothness_type": "good",
-        "maximum_incline": 6
+        'surface_type': 'cobblestone:flattened',
+        'track_type': 'grade1',
+        'smoothness_type': 'good',
+        'maximum_incline': 6
     }
-}
+};
 
 const defaultDoorDistanceReq = {
     maximum_number_results: 1,
     exclude_stairs: false,
     require_automatic: false
-}
+};
 
-let nSmallest = (n, arr) => {
+const nSmallest = (n, arr) => {
     const copy = arr.slice();
     for(let i = 0; i < n - 1; i++){
         const minIndex = copy.indexOf(Math.min(...copy));
         copy.splice(minIndex, 1);
-    };
+    }
     return Math.min(...copy);
 };
 
@@ -57,36 +59,36 @@ function selectDoorForBuilding({
     exclude_stairs = false,
     require_automatic = false,
     current_location = null,
-    originalCoordinates = []
+    _originalCoordinates = []
 }) {
 
     return new Promise((resolve, reject) => {
         if (!source && !destination) {
-            return reject(new Error("Source or destination must be provided"));
+            return reject(new Error('Source or destination must be provided'));
         }
 
         let doorAttributes = {
-            "emergency": false
+            'emergency': false
         };
         if (exclude_stairs) {
-            doorAttributes = { ...doorAttributes, "stairs": true }
-        };
+            doorAttributes = { ...doorAttributes, 'stairs': true };
+        }
         if (require_automatic) {
-            doorAttributes = { ...doorAttributes, "automatic": true }
-        };
-        
+            doorAttributes = { ...doorAttributes, 'automatic': true };
+        }
+
         if (source && destination) {
             // Find all doors for the destination building with specified attributes
-            door.find({ "building": source, ...doorAttributes }, (error, sourceDoors) => {
+            door.find({ 'building': source, ...doorAttributes }, (error, sourceDoors) => {
                 if (error) {
                     reject(error);
                 } else if (sourceDoors.length < 1) {
                     //reject(new Error("Route Impossible: No source doors meet criteria."));
                     resolve({ useOriginal: true });
                 } else {
-                    sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
+                    const sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
 
-                    door.find({ "building": destination, ...doorAttributes }, (error, destinationDoors) => {
+                    door.find({ 'building': destination, ...doorAttributes }, (error, destinationDoors) => {
                         if (error) {
                             reject(error);
                         } else if (destinationDoors.length < 1) {
@@ -94,51 +96,51 @@ function selectDoorForBuilding({
                             resolve({ useOriginal: true });
                         } else {
                             const destinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
-                        
+
                             orsMatrix.calculate({
                                 locations: [...sourceDoorsLocations, ...destinationDoorsLocations],
-                                profile: "foot-walking",
-                                sources: Array.from({ length: sourceDoorsLocations.length }, (_, i) => i), 
-                                destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + sourceDoors.length) 
+                                profile: 'foot-walking',
+                                sources: Array.from({ length: sourceDoorsLocations.length }, (_, i) => i),
+                                destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + sourceDoors.length)
                             })
-                            .then(function (json) {
-                                let minDistance = Infinity;
-                                let closestPair = { sourceIndex: -1, destinationIndex: -1 };
-                        
-                                // Loop through source locations
-                                for (let i = 0; i < sourceDoorsLocations.length; i++) {
+                                .then(function (json) {
+                                    let minDistance = Infinity;
+                                    const closestPair = { sourceIndex: -1, destinationIndex: -1 };
+
+                                    // Loop through source locations
+                                    for (let i = 0; i < sourceDoorsLocations.length; i++) {
                                     // Loop through destination locations
-                                    for (let j = 0; j < destinationDoorsLocations.length; j++) {
+                                        for (let j = 0; j < destinationDoorsLocations.length; j++) {
                                         // Calculate distance from source i to destination j
-                                        let distance = json.durations[i][j];
-                                        if (distance < minDistance) {
-                                            minDistance = distance;
-                                            closestPair.sourceIndex = i;
-                                            closestPair.destinationIndex = j;
+                                            const distance = json.durations[i][j];
+                                            if (distance < minDistance) {
+                                                minDistance = distance;
+                                                closestPair.sourceIndex = i;
+                                                closestPair.destinationIndex = j;
+                                            }
                                         }
                                     }
-                                }
-                                // Can optimize min calculation if necessary
-                        
-                                if (closestPair.sourceIndex >= 0 && closestPair.destinationIndex >= 0) {
+                                    // Can optimize min calculation if necessary
+
+                                    if (closestPair.sourceIndex >= 0 && closestPair.destinationIndex >= 0) {
                                     // Retrieve the closest pair's coordinates
-                                    let sourceCoordinates = sourceDoorsLocations[closestPair.sourceIndex];
-                                    let destinationCoordinates = destinationDoorsLocations[closestPair.destinationIndex - sourceDoorsLocations.length];
-                        
-                                    // Construct result
-                                    let result = {
-                                        SourceDoorCoordinates: sourceCoordinates,
-                                        DestinationDoorCoordinates: destinationCoordinates,
-                                        distance: minDistance
-                                    };
-                                    resolve(result)
-                                } else {
-                                    reject(new Error('An error occurred'));
-                                }
-                            })
-                            .catch(function (err) {
-                                reject(err);
-                            });
+                                        const sourceCoordinates = sourceDoorsLocations[closestPair.sourceIndex];
+                                        const destinationCoordinates = destinationDoorsLocations[closestPair.destinationIndex - sourceDoorsLocations.length];
+
+                                        // Construct result
+                                        const result = {
+                                            SourceDoorCoordinates: sourceCoordinates,
+                                            DestinationDoorCoordinates: destinationCoordinates,
+                                            distance: minDistance
+                                        };
+                                        resolve(result);
+                                    } else {
+                                        reject(new Error('An error occurred'));
+                                    }
+                                })
+                                .catch(function (err) {
+                                    reject(err);
+                                });
                         }
                     });
                 }
@@ -147,7 +149,7 @@ function selectDoorForBuilding({
 
         else if (destination) {
             // Find all doors for the destination building with specified attributes
-            door.find({ "building": destination, ...doorAttributes }, (error, destinationDoors) => {
+            door.find({ 'building': destination, ...doorAttributes }, (error, destinationDoors) => {
                 if (error) {
                     reject(error);
                 } else if (destinationDoors.length < 1) {
@@ -160,36 +162,36 @@ function selectDoorForBuilding({
 
                     orsMatrix.calculate({
                         locations: [...startLocationArray, ...destinationDoorsLocations],
-                        profile: "foot-walking",
-                        sources: [0], 
-                        destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + 1) 
+                        profile: 'foot-walking',
+                        sources: [0],
+                        destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + 1)
                     })
-                    .then(function (json) {
-                        let minDuration = Infinity;
-                        let destinationIndex = -1;
+                        .then(function (json) {
+                            let minDuration = Infinity;
+                            let destinationIndex = -1;
 
-                        const durations = json.durations[0]; 
-                        durations.forEach((duration, i) => {
-                            if (duration < minDuration) {
-                                minDuration = duration;
-                                destinationIndex = i; 
+                            const durations = json.durations[0];
+                            durations.forEach((duration, i) => {
+                                if (duration < minDuration) {
+                                    minDuration = duration;
+                                    destinationIndex = i;
+                                }
+                            });
+
+                            if (destinationIndex !== -1) {
+                                const shortestPath = {
+                                    start: current_location,
+                                    end: [destinationDoors[destinationIndex].longitude, destinationDoors[destinationIndex].latitude],
+                                    duration: minDuration
+                                };
+                                resolve(shortestPath);
+                            } else {
+                                reject(new Error('An error occurred'));
                             }
+                        })
+                        .catch(function (err) {
+                            reject(err);
                         });
-
-                        if (destinationIndex !== -1) {
-                            const shortestPath = {
-                                start: current_location,
-                                end: [destinationDoors[destinationIndex].longitude, destinationDoors[destinationIndex].latitude],
-                                duration: minDuration
-                            };
-                            resolve(shortestPath)
-                        } else {
-                            reject(new Error('An error occurred'));
-                        }
-                    })
-                    .catch(function (err) {
-                        reject(err);
-                    });
                 }
             });
         }
@@ -201,18 +203,18 @@ function selectDoorForBuilding({
 // The router will be added as a middleware and will take control of requests starting with path /app/building.
 const adaptiveNavRoutes = express.Router();
 
-adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
-    adaptiveNavDataReq = req.body;
+adaptiveNavRoutes.route('/app/route').post(function (req, res, next) {
+    const adaptiveNavDataReq = req.body;
 
-    /** @type {AdaptiveNavRouteRequest} */
-    adaptiveNavData = {
-        coordinates: adaptiveNavDataReq.coordinates, // Only field required
-        avoid_features: adaptiveNavDataReq.avoid_features ?? defaultAdaptiveNav.avoid_features,
-        restrictions: adaptiveNavDataReq.restrictions ?? defaultAdaptiveNav.restrictions,
-        avoid_obstacles: adaptiveNavDataReq.avoid_obstacles ?? defaultAdaptiveNav.avoid_obstacles,
-        source_building: adaptiveNavDataReq.source_building ?? null,
-        destination_building: adaptiveNavDataReq.destination_building ?? null,
-    }
+    // /** @type {AdaptiveNavRouteRequest} */
+    // const adaptiveNavData = {
+    //     coordinates: adaptiveNavDataReq.coordinates, // Only field required
+    //     avoid_features: adaptiveNavDataReq.avoid_features ?? defaultAdaptiveNav.avoid_features,
+    //     restrictions: adaptiveNavDataReq.restrictions ?? defaultAdaptiveNav.restrictions,
+    //     avoid_obstacles: adaptiveNavDataReq.avoid_obstacles ?? defaultAdaptiveNav.avoid_obstacles,
+    //     source_building: adaptiveNavDataReq.source_building ?? null,
+    //     destination_building: adaptiveNavDataReq.destination_building ?? null,
+    // };
     let doorSelectionPromise;
 
     if (adaptiveNavDataReq.source_building && adaptiveNavDataReq.destination_building) {
@@ -239,7 +241,7 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
     doorSelectionPromise.then(sourceCoordinates => {
         if (sourceCoordinates) {
             if (sourceCoordinates.useOriginal) {
-                console.log("Using original coordinates since error finding doors")
+                // Using original coordinates since error finding doors
             }
             else{
                 if (sourceCoordinates.SourceDoorCoordinates && sourceCoordinates.DestinationDoorCoordinates) {
@@ -252,56 +254,67 @@ adaptiveNavRoutes.route("/app/route").post(function (req, res, next) {
         }
 
         // Get obstacle locations of relevant obstacles
-        return indoorIssueRoutes.find({ "category": { $in: adaptiveNavDataReq.avoid_obstacles } }, "avoidPolygon").exec();
-    })
-    .then(obstacleData => {
-        const avoidPolygons = obstacleData.map(obj => obj.avoidPolygon);
-
-        let adaptiveNavOptions = {
-            avoid_features: adaptiveNavDataReq.avoid_features ?? defaultAdaptiveNav.avoid_features,
-            profile_params: {
-                "restrictions": adaptiveNavDataReq.restrictions ?? defaultAdaptiveNav.restrictions
-            }
-        };
-
-        if (avoidPolygons.length > 0) {
-            adaptiveNavOptions = {
-                ...adaptiveNavOptions,
-                avoid_polygons: {
-                    type: 'MultiPolygon',
-                    coordinates: avoidPolygons
-                }
-            }
+        if (adaptiveNavDataReq.avoid_obstacles && adaptiveNavDataReq.avoid_obstacles.length > 0) {
+            const placeholders = adaptiveNavDataReq.avoid_obstacles.map((_, i) => `$${i + 1}`).join(', ');
+            const queryText = `
+                SELECT avoidpolygon
+                FROM issue
+                WHERE categories && ARRAY[${placeholders}]::text[]
+            `;
+            return pool.query(queryText, adaptiveNavDataReq.avoid_obstacles);
+        } else {
+            return Promise.resolve({ rows: [] });
         }
+    })
+        .then(result => {
+            const obstacleData = result.rows || [];
+            const avoidPolygons = obstacleData.map(obj => obj.avoidpolygon).filter(polygon => polygon);
 
-        // Given obstacle list and route features, return route.
-        return orsDirections.calculate({
-            coordinates: adaptiveNavDataReq.coordinates,
-            profile: 'wheelchair',
-            options: adaptiveNavOptions,
-            format: 'geojson'
+            let adaptiveNavOptions = {
+                avoid_features: adaptiveNavDataReq.avoid_features ?? defaultAdaptiveNav.avoid_features,
+                profile_params: {
+                    'restrictions': adaptiveNavDataReq.restrictions ?? defaultAdaptiveNav.restrictions
+                }
+            };
+
+            if (avoidPolygons.length > 0) {
+                adaptiveNavOptions = {
+                    ...adaptiveNavOptions,
+                    avoid_polygons: {
+                        type: 'MultiPolygon',
+                        coordinates: avoidPolygons
+                    }
+                };
+            }
+
+            // Given obstacle list and route features, return route.
+            return orsDirections.calculate({
+                coordinates: adaptiveNavDataReq.coordinates,
+                profile: 'wheelchair',
+                options: adaptiveNavOptions,
+                format: 'geojson'
+            });
+        })
+        .then(function (json) {
+            res.status(200).json(json);
+        })
+        .catch(function (err) {
+            return next(err);
         });
-    })
-    .then(function (json) {
-        res.status(200).json(json);
-    })
-    .catch(function (err) {
-        return next(err);
-    });
 });
 
-adaptiveNavRoutes.route("/app/route/hardcoded-test").get(function (req, res, next) {
+adaptiveNavRoutes.route('/app/route/hardcoded-test').get(function (req, res, next) {
     orsDirections.calculate({
         coordinates: [[8.690958, 49.404662], [8.687868, 49.390139]],
         profile: 'wheelchair',
         options: {
-            avoid_features: ["steps"],
+            avoid_features: ['steps'],
             profile_params: {
-                "restrictions": {
-                    "surface_type": "cobblestone:flattened",
-                    "track_type": "grade1",
-                    "smoothness_type": "good",
-                    "maximum_incline": 6
+                'restrictions': {
+                    'surface_type': 'cobblestone:flattened',
+                    'track_type': 'grade1',
+                    'smoothness_type': 'good',
+                    'maximum_incline': 6
                 }
             },
             avoid_polygons: {
@@ -327,79 +340,79 @@ adaptiveNavRoutes.route("/app/route/hardcoded-test").get(function (req, res, nex
         });
 });
 
-adaptiveNavRoutes.route("/app/route/hardcoded-test2").get(function (req, res, next) {
+adaptiveNavRoutes.route('/app/route/hardcoded-test2').get(function (req, res, next) {
     orsDirections.calculate({
         coordinates: [[-79.046187, 35.910986], [-79.053061, 35.909575]],
         profile: 'wheelchair',
         options: {
-            avoid_features: ["steps"],
+            avoid_features: ['steps'],
             profile_params: {
-                "restrictions": {
-                    "surface_type": "cobblestone:flattened",
-                    "track_type": "grade1",
-                    "smoothness_type": "good",
-                    "maximum_incline": 6
+                'restrictions': {
+                    'surface_type': 'cobblestone:flattened',
+                    'track_type': 'grade1',
+                    'smoothness_type': 'good',
+                    'maximum_incline': 6
                 }
-           },
-           "avoid_polygons": {
-            "type": "MultiPolygon",
-            "coordinates": [
-              [
-                [
-                  [
-                    "-79.051700",
-                    "35.910300"
-                  ],
-                  [
-                    "-79.050900",
-                    "35.910600"
-                  ],
-                  [
-                    "-79.050600",
-                    "35.910200"
-                  ],
-                  [
-                    "-79.051400",
-                    "35.90990"
-                  ],
-                  [
-                    "-79.051700",
-                    "35.910300"
-                  ],
+            },
+            'avoid_polygons': {
+                'type': 'MultiPolygon',
+                'coordinates': [
+                    [
+                        [
+                            [
+                                '-79.051700',
+                                '35.910300'
+                            ],
+                            [
+                                '-79.050900',
+                                '35.910600'
+                            ],
+                            [
+                                '-79.050600',
+                                '35.910200'
+                            ],
+                            [
+                                '-79.051400',
+                                '35.90990'
+                            ],
+                            [
+                                '-79.051700',
+                                '35.910300'
+                            ],
+                        ]
+                    ],
+                    [
+                        [
+                            [
+                                '-79.0468',
+                                '35.9112'
+                            ],
+                            [
+                                '-79.0465',
+                                '35.9112'
+                            ],
+                            [
+                                '-79.0465',
+                                '35.9109'
+                            ],
+                            [
+                                '-79.0468',
+                                '35.9109'
+                            ],
+                            [
+                                '-79.0468',
+                                '35.9112'
+                            ],
+                        ]
+                    ],
+                    [[[-79.050574,35.910172], [-79.04985, 35.910457],[-79.049587, 35.909994],[-79.050312,35.909731],[-79.050574,35.910172]],]
                 ]
-              ],
-              [
-                [
-                  [
-                    "-79.0468",
-                    "35.9112"
-                  ],
-                  [
-                    "-79.0465",
-                    "35.9112"
-                  ],
-                  [
-                    "-79.0465",
-                    "35.9109"
-                  ],
-                  [
-                    "-79.0468",
-                    "35.9109"
-                  ],
-                  [
-                    "-79.0468",
-                    "35.9112"
-                  ],
-                ]
-              ],
-              [[[-79.050574,35.910172], [-79.04985, 35.910457],[-79.049587, 35.909994],[-79.050312,35.909731],[-79.050574,35.910172]],]
-            ]
-          }
-                    //outside of gardner hall
-                    //[[-79.051700,35.910300], [-79.050900, 35.910600], [-79.050600, 35.910200], [-79.051400,35.90990], [-79.051700,35.910300]],
-                    //[[-79.050574,35.910172], [-79.04985, 35.910457],[-79.049587, 35.909994],[-79.050312,35.909731],[-79.050574,35.910172]],
-                    //connor near bus stop
-                    //[[-79.0468,35.9112], [-79.0465, 35.9112], [-79.0465, 35.9109], [-79.0468,35.9109], [-79.0468,35.9112]],
+            }
+            //outside of gardner hall
+            //[[-79.051700,35.910300], [-79.050900, 35.910600], [-79.050600, 35.910200], [-79.051400,35.90990], [-79.051700,35.910300]],
+            //[[-79.050574,35.910172], [-79.04985, 35.910457],[-79.049587, 35.909994],[-79.050312,35.909731],[-79.050574,35.910172]],
+            //connor near bus stop
+            //[[-79.0468,35.9112], [-79.0465, 35.9112], [-79.0465, 35.9109], [-79.0468,35.9109], [-79.0468,35.9112]],
         },
         format: 'geojson'
     })
@@ -411,80 +424,77 @@ adaptiveNavRoutes.route("/app/route/hardcoded-test2").get(function (req, res, ne
         });
 });
 // Given a start and an end building, determine the doors to use for routing, considering distance and door restrictions.
-adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req, res, next) {
-    rawDistanceReq = req.body;
+adaptiveNavRoutes.route('/app/route/minimize-door-distance').post(function (req, res, next) {
+    const rawDistanceReq = req.body;
 
     /** @type {DoorDistanceRequest} */
-    distanceReq = {
+    const distanceReq = {
         source: rawDistanceReq.source, // required
         destination: rawDistanceReq.destination, // required
         number: rawDistanceReq.maximum_number_results ?? defaultDoorDistanceReq.maximum_number_results,
         exclude_stairs: rawDistanceReq.exclude_stairs ?? defaultDoorDistanceReq.exclude_stairs,
         require_automatic: rawDistanceReq.require_automatic ?? defaultDoorDistanceReq.require_automatic
-    }
+    };
 
     let doorAttributes = {
-        "emergency": false
+        'emergency': false
     };
     if (distanceReq.exclude_stairs) {
-        doorAttributes = { ...doorAttributes, "stairs": false}
-    };
+        doorAttributes = { ...doorAttributes, 'stairs': false};
+    }
     if (distanceReq.require_automatic) {
-        doorAttributes = { ...doorAttributes, "automatic": true}
-    };
+        doorAttributes = { ...doorAttributes, 'automatic': true};
+    }
 
     // get all doors for source and dest buildings, and use for matrix calculations
-    door.find({ "building": distanceReq.source, ...doorAttributes }, (error, sourceDoors) => {
+    door.find({ 'building': distanceReq.source, ...doorAttributes }, (error, sourceDoors) => {
         if (error) {
-            return next(error)
+            return next(error);
         } else if (sourceDoors.length < 1) {
-            res.json({ "message": "Route impossible. (No source doors exist with those attributes.) (500)" })
-            res.status(ROUTE_IMPOSSIBLE)
+            res.json({ 'message': 'Route impossible. (No source doors exist with those attributes.) (500)' });
+            res.status(ROUTE_IMPOSSIBLE);
         } else {
-            sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
+            const sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
 
-            door.find({ "building": distanceReq.destination, ...doorAttributes }, (error, destinationDoors) => {
+            door.find({ 'building': distanceReq.destination, ...doorAttributes }, (error, destinationDoors) => {
                 if (error) {
-                    return next(error)
+                    return next(error);
                 } else if (destinationDoors.length < 1) {
-                    res.json({ "message": "Route impossible. (No destination doors exist with those attributes.) (500)" })
-                    res.status(ROUTE_IMPOSSIBLE)
+                    res.json({ 'message': 'Route impossible. (No destination doors exist with those attributes.) (500)' });
+                    res.status(ROUTE_IMPOSSIBLE);
                 } else {
-                    testdestinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
-                    test = [[-79.050822, 35.91312]]
-                    destinationDoorsLocations = [...testdestinationDoorsLocations, ...test]
-                    console.log(destinationDoorsLocations)
+                    const testdestinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
+                    const testCoordinates = [[-79.050822, 35.91312]];
+                    const destinationDoorsLocations = [...testdestinationDoorsLocations, ...testCoordinates];
                     orsMatrix.calculate({
                         locations: [...sourceDoorsLocations, ...destinationDoorsLocations],
-                        profile: "foot-walking",
+                        profile: 'foot-walking',
                         sources: Array.from({ length: sourceDoorsLocations.length }, (_, i) => i),  // instead of 'all'
                         destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + sourceDoors.length)  // instead of 'all'
                     })
                         .then(function (json) {
                             // return a limited number of longitude and latitudes to consider.
-                            // durations are assumed to be given as an array of arrays, 
+                            // durations are assumed to be given as an array of arrays,
                             // where the outer array is indexed by source,
                             // and the inner array is indexed by destination.
 
-                            console.log(json)
 
                             // todo: fix durations cleaned
-                            durationsCleaned = (json.durations).map((listDuration) => listDuration[0]);
-                            maxDuration = nSmallest(distanceReq.number, durationsCleaned);
+                            const durationsCleaned = (json.durations).map((listDuration) => listDuration[0]);
+                            const maxDuration = nSmallest(distanceReq.number, durationsCleaned);
 
-                            console.log(durationsCleaned)
 
-                            result = [];
+                            const result = [];
                             for(let i = 0; i < durationsCleaned.length; i++){
                                 if(durationsCleaned[i] > maxDuration){
-                                   continue;
-                                };
+                                    continue;
+                                }
                                 // json.metadata.query.locations[i]
                                 result.push({
-                                    "source": "",
-                                    "destination": ""
+                                    'source': '',
+                                    'destination': ''
                                 });
-                             };
+                            }
 
                             res.status(200).json(json);
                         })
@@ -492,131 +502,127 @@ adaptiveNavRoutes.route("/app/route/minimize-door-distance").post(function (req,
                             return next(err);
                         });
                 }
-            })
+            });
         }
-    })
+    });
 });
 
 // Given a start and an end building, determine the doors to use for routing, considering distance and door restrictions.
-adaptiveNavRoutes.route("/app/route/minimize-door-distance-2").post(function (req, res, next) {
-    rawDistanceReq = req.body;
+adaptiveNavRoutes.route('/app/route/minimize-door-distance-2').post(function (req, res, next) {
+    const rawDistanceReq = req.body;
 
     /** @type {DoorDistanceRequest} */
-    distanceReq = {
+    const distanceReq = {
         source: rawDistanceReq.source, // required
         destination: rawDistanceReq.destination, // required
         number: rawDistanceReq.maximum_number_results ?? defaultDoorDistanceReq.maximum_number_results,
         exclude_stairs: rawDistanceReq.exclude_stairs ?? defaultDoorDistanceReq.exclude_stairs,
         require_automatic: rawDistanceReq.require_automatic ?? defaultDoorDistanceReq.require_automatic
-    }
+    };
 
     let doorAttributes = {
-        "emergency": false
+        'emergency': false
     };
     if (distanceReq.exclude_stairs) {
-        doorAttributes = { ...doorAttributes, "stairs": false}
-    };
+        doorAttributes = { ...doorAttributes, 'stairs': false};
+    }
     if (distanceReq.require_automatic) {
-        doorAttributes = { ...doorAttributes, "automatic": true}
-    };
+        doorAttributes = { ...doorAttributes, 'automatic': true};
+    }
 
     // get all doors for source and dest buildings, and use for matrix calculations
-    door.find({ "building": distanceReq.source, ...doorAttributes }, (error, sourceDoors) => {
+    door.find({ 'building': distanceReq.source, ...doorAttributes }, (error, sourceDoors) => {
         if (error) {
-            return next(error)
+            return next(error);
         } else if (sourceDoors.length < 1) {
-            res.json({ "message": "Route impossible. (No source doors exist with those attributes.) (500)" })
-            res.status(ROUTE_IMPOSSIBLE)
+            res.json({ 'message': 'Route impossible. (No source doors exist with those attributes.) (500)' });
+            res.status(ROUTE_IMPOSSIBLE);
         } else {
-            sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
+            const sourceDoorsLocations = sourceDoors.map((door) => [door.longitude, door.latitude]);
 
-            door.find({ "building": distanceReq.destination, ...doorAttributes }, (error, destinationDoors) => {
+            door.find({ 'building': distanceReq.destination, ...doorAttributes }, (error, destinationDoors) => {
                 if (error) {
-                    return next(error)
+                    return next(error);
                 } else if (destinationDoors.length < 1) {
-                    res.json({ "message": "Route impossible. (No destination doors exist with those attributes.) (500)" })
-                    res.status(ROUTE_IMPOSSIBLE)
+                    res.json({ 'message': 'Route impossible. (No destination doors exist with those attributes.) (500)' });
+                    res.status(ROUTE_IMPOSSIBLE);
                 } else {
-                    testdestinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
-                    test = [[-79.050822, 35.91312]]
-                    destinationDoorsLocations = [...testdestinationDoorsLocations, ...test]
-                    console.log(destinationDoorsLocations)
+                    const testdestinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
+                    const testCoordinates = [[-79.050822, 35.91312]];
+                    const destinationDoorsLocations = [...testdestinationDoorsLocations, ...testCoordinates];
                     orsMatrix.calculate({
                         locations: [...sourceDoorsLocations, ...destinationDoorsLocations],
-                        profile: "foot-walking",
+                        profile: 'foot-walking',
                         sources: Array.from({ length: sourceDoorsLocations.length }, (_, i) => i),  // instead of 'all'
                         destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + sourceDoors.length)  // instead of 'all'
                     })
                         .then(function (json) {
                             // return a limited number of longitude and latitudes to consider.
-                            // durations are assumed to be given as an array of arrays, 
+                            // durations are assumed to be given as an array of arrays,
                             // where the outer array is indexed by source,
                             // and the inner array is indexed by destination.
 
-                            console.log(json)
 
                             // todo: fix durations cleaned
-                            durationsCleaned = (json.durations).map((listDuration) => listDuration[0]);
-                            maxDuration = nSmallest(distanceReq.number, durationsCleaned);
+                            const durationsCleaned = (json.durations).map((listDuration) => listDuration[0]);
+                            const maxDuration = nSmallest(distanceReq.number, durationsCleaned);
 
-                            console.log(durationsCleaned)
 
-                            result = [];
+                            const result = [];
                             for(let i = 0; i < durationsCleaned.length; i++){
                                 if(durationsCleaned[i] > maxDuration){
-                                   continue;
-                                };
+                                    continue;
+                                }
                                 // json.metadata.query.locations[i]
                                 result.push({
-                                    "source": "",
-                                    "destination": ""
+                                    'source': '',
+                                    'destination': ''
                                 });
-                             };
+                            }
 
-                             console.log(json);
-                             let minDistance = Infinity;
-                             let closestPair = { sourceIndex: -1, destinationIndex: -1 };
-                     
-                             // Loop through source locations
-                             for (let i = 0; i < sourceDoorsLocations.length; i++) {
-                                 // Loop through destination locations
-                                 for (let j = 0; j < destinationDoorsLocations.length; j++) {
-                                     // Calculate distance from source i to destination j
-                                     let distance = json.durations[i][j];
-                                     if (distance < minDistance) {
-                                         minDistance = distance;
-                                         closestPair.sourceIndex = i;
-                                         closestPair.destinationIndex = j;
-                                     }
-                                 }
-                             }
-                     
-                             if (closestPair.sourceIndex >= 0 && closestPair.destinationIndex >= 0) {
-                                 // Retrieve the closest pair's coordinates
-                                 let sourceCoordinates = sourceDoorsLocations[closestPair.sourceIndex];
-                                 let destinationCoordinates = destinationDoorsLocations[closestPair.destinationIndex - sourceDoorsLocations.length];
-                     
-                                 // Construct result
-                                 let result2 = {
-                                     SourceDoorCoordinates: sourceCoordinates,
-                                     DestinationDoorCoordinates: destinationCoordinates,
-                                     distance: minDistance
-                                 };
-                                 res.status(200).json(result2);
-                             } 
+                            let minDistance = Infinity;
+                            const closestPair = { sourceIndex: -1, destinationIndex: -1 };
 
-                            
+                            // Loop through source locations
+                            for (let i = 0; i < sourceDoorsLocations.length; i++) {
+                                // Loop through destination locations
+                                for (let j = 0; j < destinationDoorsLocations.length; j++) {
+                                    // Calculate distance from source i to destination j
+                                    const distance = json.durations[i][j];
+                                    if (distance < minDistance) {
+                                        minDistance = distance;
+                                        closestPair.sourceIndex = i;
+                                        closestPair.destinationIndex = j;
+                                    }
+                                }
+                            }
+
+                            if (closestPair.sourceIndex >= 0 && closestPair.destinationIndex >= 0) {
+                                // Retrieve the closest pair's coordinates
+                                const sourceCoordinates = sourceDoorsLocations[closestPair.sourceIndex];
+                                const destinationCoordinates = destinationDoorsLocations[closestPair.destinationIndex - sourceDoorsLocations.length];
+
+                                // Construct result
+                                const result2 = {
+                                    SourceDoorCoordinates: sourceCoordinates,
+                                    DestinationDoorCoordinates: destinationCoordinates,
+                                    distance: minDistance
+                                };
+                                res.status(200).json(result2);
+                            }
+
+
                         })
                         .catch(function (err) {
                             return next(err);
                         });
                 }
-            })
+            });
         }
-    })
+    });
 });
 
-adaptiveNavRoutes.route("/app/route/to-door").post(function (req, res, next) {
+adaptiveNavRoutes.route('/app/route/to-door').post(function (req, res, next) {
     const rawLocationReq = req.body;
 
     const currentLocation = {
@@ -633,21 +639,21 @@ adaptiveNavRoutes.route("/app/route/to-door").post(function (req, res, next) {
     };
 
     let doorAttributes = {
-        "emergency": false
+        'emergency': false
     };
     if (locationReq.exclude_stairs) {
-        doorAttributes = { ...doorAttributes, "stairs": false }
-    };
+        doorAttributes = { ...doorAttributes, 'stairs': false };
+    }
     if (locationReq.require_automatic) {
-        doorAttributes = { ...doorAttributes, "automatic": true }
-    };
+        doorAttributes = { ...doorAttributes, 'automatic': true };
+    }
 
     // Find all doors for the destination building with specified attributes
-    door.find({ "building": locationReq.destination, ...doorAttributes }, (error, destinationDoors) => {
+    door.find({ 'building': locationReq.destination, ...doorAttributes }, (error, destinationDoors) => {
         if (error) {
             return next(error);
         } else if (destinationDoors.length < 1) {
-            res.status(404).json({ "message": "Route impossible. (No destination doors exist with those attributes.)" });
+            res.status(404).json({ 'message': 'Route impossible. (No destination doors exist with those attributes.)' });
         } else {
             const destinationDoorsLocations = destinationDoors.map((door) => [door.longitude, door.latitude]);
 
@@ -655,38 +661,38 @@ adaptiveNavRoutes.route("/app/route/to-door").post(function (req, res, next) {
 
             orsMatrix.calculate({
                 locations: [...startLocationArray, ...destinationDoorsLocations],
-                profile: "foot-walking",
-                sources: [0], 
-                destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + 1) 
+                profile: 'foot-walking',
+                sources: [0],
+                destinations: Array.from({ length: destinationDoorsLocations.length }, (_, i) => i + 1)
             })
-            .then(function (json) {
-                let minDuration = Infinity;
-                let destinationIndex = -1;
+                .then(function (json) {
+                    let minDuration = Infinity;
+                    let destinationIndex = -1;
 
-                const durations = json.durations[0]; 
-                durations.forEach((duration, i) => {
-                    if (duration < minDuration) {
-                        minDuration = duration;
-                        destinationIndex = i; 
-                    }
-                });
+                    const durations = json.durations[0];
+                    durations.forEach((duration, i) => {
+                        if (duration < minDuration) {
+                            minDuration = duration;
+                            destinationIndex = i;
+                        }
+                    });
 
-                if (destinationIndex !== -1) {
-                    const shortestPath = {
-                        start: currentLocation,
-                        end: destinationDoors[destinationIndex],
-                        duration: minDuration
-                    };
+                    if (destinationIndex !== -1) {
+                        const shortestPath = {
+                            start: currentLocation,
+                            end: destinationDoors[destinationIndex],
+                            duration: minDuration
+                        };
 
-                    res.status(200).json(shortestPath);
-                } else {
+                        res.status(200).json(shortestPath);
+                    } else {
                     // Handle case where no path was found
-                    res.status(404).json({ message: "No path found" });
-                }
-            })
-            .catch(function (err) {
-                return next(err);
-            });
+                        res.status(404).json({ message: 'No path found' });
+                    }
+                })
+                .catch(function (err) {
+                    return next(err);
+                });
         }
     });
 });

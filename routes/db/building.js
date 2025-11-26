@@ -1,16 +1,16 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const pool = require("../../connections/pool");
+const pool = require('../../connections/pool');
 const pg = require('pg');
 const types = pg.types;
 const { censorAllProfanity } = require("../../utils/profanityFilter");
 
 types.setTypeParser(1700, function (val){
-  return val === null ? null : parseFloat(val);
+    return val === null ? null : parseFloat(val);
 });
 
 // Get a list of all the locations.
-router.get("/app/building/all", async (req, res, next) => {
+router.get('/app/building/all', async (req, res, next) => {
     try {
         const { rows } = await pool.query('SELECT * FROM Location');
         res.json(rows);
@@ -20,7 +20,7 @@ router.get("/app/building/all", async (req, res, next) => {
 });
 
 // Get a single location by id
-router.get("/app/building/:id", async (req, res, next) => {
+router.get('/app/building/:id', async (req, res, next) => {
     try {
         const { rows } = await pool.query('SELECT * FROM Location WHERE location_id = $1', [req.params.id]);
         if (rows.length > 0) {
@@ -34,7 +34,7 @@ router.get("/app/building/:id", async (req, res, next) => {
 });
 
 // Create a new location.
-router.post("/app/building/add", async (req, res, next) => {
+router.post('/app/building/add', async (req, res, next) => {
     try {
         const { full_name, abbreviation, defaultLatitude, defaultLongitude, campus_id, geo_address } = req.body;
         
@@ -49,7 +49,7 @@ router.post("/app/building/add", async (req, res, next) => {
 });
 
 // Update a location by id.
-router.patch("/app/building/update/:id", async (req, res, next) => {
+router.patch('/app/building/update/:id', async (req, res, next) => {
     try {
         const updates = { ...req.body };
         
@@ -76,7 +76,7 @@ router.patch("/app/building/update/:id", async (req, res, next) => {
 });
 
 // Delete a location by id.
-router.delete("/app/building/delete/:id", async (req, res, next) => {
+router.delete('/app/building/delete/:id', async (req, res, next) => {
     try {
         const { rows } = await pool.query('DELETE FROM Location WHERE location_id = $1 RETURNING *', [req.params.id]);
         if (rows.length > 0) {

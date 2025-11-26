@@ -1,0 +1,103 @@
+name: Code Quality & Dependencies
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Dependency Review
+      uses: actions/dependency-review-action@v4
+
+  update-dependencies:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+        cache: 'npm'
+
+    - name: Update dependencies
+      run: |
+        npm update
+        npm audit fix --force
+      continue-on-error: true
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies'
+        title: 'chore: automated dependency updates'
+        body: |
+          Automated dependency updates created by GitHub Actions.
+          
+          Please review the changes before merging.
+        branch: chore/dependency-updates
+        delete-branch: true
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check for console.log statements
+      run: |
+        if grep -r "console\.log" --include="*.js" . --exclude-dir=node_modules --exclude-dir=.git; then
+          echo "Warning: Found console.log statements in code"
+          exit 1
+        else
+          echo "No console.log statements found"
+        fi
+      continue-on-error: true
+
+    - name: Check for TODO comments
+      run: |
+        echo "TODO items found in codebase:"
+        grep -r "TODO\|FIXME\|HACK" --include="*.js" . --exclude-dir=node_modules --exclude-dir=.git || echo "No TODO items found"
+      continue-on-error: true
+
+    - name: Check file structure
+      run: |
+        echo "Checking for proper file structure..."
+        if [ ! -f "package.json" ]; then
+          echo "Error: package.json not found"
+          exit 1
+        fi
+        if [ ! -f "server.js" ]; then
+          echo "Error: server.js not found"
+          exit 1
+        fi
+        if [ ! -d "routes" ]; then
+          echo "Warning: routes directory not found"
+        fi
+        echo "File structure check completed"

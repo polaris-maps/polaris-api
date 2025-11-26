@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-// const app = require('../server');
+const app = require('../server');
 
 chai.use(chaiHttp);
 chai.should();
@@ -22,7 +22,7 @@ describe('Adaptive Navigation API Documentation', () => {
                 }
             };
 
-            chai.request('http://localhost:5001')
+            chai.request(app)
                 .post('/app/route')
                 .send(requestBody)
                 .end((err, res) => {
@@ -93,7 +93,7 @@ describe('Adaptive Navigation API Documentation', () => {
                 }
             };
 
-            chai.request('http://localhost:5001')
+            chai.request(app)
                 .post('/app/route')
                 .send(requestBody)
                 .end((err, res) => {
@@ -140,7 +140,7 @@ describe('Adaptive Navigation API Documentation', () => {
     // Test /app/route/hardcodedtest endpoint
     describe('/app/route/hardcodedtest', () => {
         it('it should return a valid hardcoded route', (done) => {
-            chai.request('http://localhost:5001')
+            chai.request(app)
                 .get('/app/route/hardcodedtest')
                 .end((err, res) => {
                     res.should.have.status(200);

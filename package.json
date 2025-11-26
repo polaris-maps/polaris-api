@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "jest",
-    "mocha": "mocha test/adaptiveNav.test.js --timeout 10000",
+    "mocha": "mocha test/adaptiveNav.test.js --timeout 10000 --exit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },

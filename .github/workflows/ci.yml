@@ -47,7 +47,14 @@ jobs:
         cat > config.env << EOF
         POSTGRES_URI=postgresql://postgres:postgres@localhost:5432/test_db
         ATLAS_URI_LOGS=mongodb://localhost:27017/test_logs
+        ORS_API_KEY=${{ secrets.ORS_API_KEY }}
         EOF
+
+    - name: Set up database schema
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f schema.sql
+      env:
+        PGPASSWORD: postgres
 
     - name: Run linting (if eslint config exists)
       run: |

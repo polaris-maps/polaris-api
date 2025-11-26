@@ -142,7 +142,7 @@ jobs:
       run: |
         timeout 30s node server.js &
         sleep 10
-        curl -f http://localhost:3000/app/ || exit 1
+        curl -f http://localhost:5000/app/ || exit 1
       env:
         NODE_ENV: production
         POSTGRES_URI: postgresql://dummy:dummy@localhost:5432/dummy

@@ -87,14 +87,16 @@ app.use(function (err, _req, res, _next) {
     res.status(err.statusCode).send(err.message);
 });
 
-// exit
-process.on('SIGINT', () => {
-    server.close();
-});
+// Only start server if not being imported for tests
+if (require.main === module) {
+    const server = app.listen(port, () => {
+        console.log(`Server is running on port: ${port}`);
+    });
 
-const server = app.listen(port, () => {
-
-    console.log(`Server is running on port: ${port}`);
-});
+    // exit
+    process.on('SIGINT', () => {
+        server.close();
+    });
+}
 
 module.exports = app;

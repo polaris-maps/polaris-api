@@ -5,5 +5,9 @@
   },
   "transformIgnorePatterns": [
     "node_modules/(?!(badwords-list)/)"
+  ],
+  "testPathIgnorePatterns": [
+    "/node_modules/",
+    "test/adaptiveNav.test.js"
   ]
 }

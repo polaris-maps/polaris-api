@@ -79,9 +79,9 @@ app.use(function (_req, res) {
 });
 
 // error handler
-// eslint-disable-next-line no-unused-vars
+ 
 app.use(function (err, _req, res, _next) {
-    // eslint-disable-next-line no-console
+     
     console.error(err.message);
     if (!err.statusCode) err.statusCode = 500;
     res.status(err.statusCode).send(err.message);
@@ -93,6 +93,6 @@ process.on('SIGINT', () => {
 });
 
 const server = app.listen(port, () => {
-    // eslint-disable-next-line no-console
+     
     console.log(`Server is running on port: ${port}`);
 });

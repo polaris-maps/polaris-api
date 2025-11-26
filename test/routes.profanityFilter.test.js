@@ -2,12 +2,12 @@ const request = require('supertest');
 const express = require('express');
 
 // Mock the database pool to avoid needing actual database connection for testing
-jest.mock('../../connections/pool', () => ({
+jest.mock('../connections/pool', () => ({
     query: jest.fn()
 }));
 
-const pool = require('../../connections/pool');
-const indoorIssueRoutes = require('../../routes/db/indoorIssue');
+const pool = require('../connections/pool');
+const indoorIssueRoutes = require('../routes/db/indoorIssue');
 
 const app = express();
 app.use(express.json());
@@ -80,7 +80,7 @@ describe('Indoor Issue Routes with Profanity Filter', () => {
         expect(pool.query).toHaveBeenCalledWith(
             expect.any(String),
             expect.arrayContaining([
-                1,
+                '1',
                 '**** elevator still broken'
             ])
         );

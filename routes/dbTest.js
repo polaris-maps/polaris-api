@@ -26,7 +26,7 @@ dbTestRoutes.get('/app/test-db', async (req, res, next) => {
             time: result.rows[0].now
         });
     } catch (error) {
-        // eslint-disable-next-line no-console
+         
         console.error('Failed to connect to the database.', error);
         return next(error);
     }

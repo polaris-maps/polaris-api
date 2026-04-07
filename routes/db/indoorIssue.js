@@ -40,7 +40,19 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
 
     const filteredLocation = location ? censorAllProfanity(location) : location;
     const filteredDescription = description ? censorAllProfanity(description) : description;
-    const filteredQna = qna ? censorAllProfanity(qna) : qna;
+
+    // Handle qna as JSON - stringify if it's an object/array
+    let qnaValue = qna;
+    if (qna && typeof qna === 'object') {
+        qnaValue = JSON.stringify(qna);
+    }
+    const filteredQna = qnaValue ? censorAllProfanity(qnaValue) : qnaValue;
+
+    // Handle avoidPolygon as JSON - stringify if it's an object
+    let avoidPolygonValue = avoidPolygon;
+    if (avoidPolygon && typeof avoidPolygon === 'object') {
+        avoidPolygonValue = JSON.stringify(avoidPolygon);
+    }
 
     const queryText = `
     INSERT INTO Issue(
@@ -54,11 +66,11 @@ indoorIssueRoutes.post("/app/indoorIssue/add", async (req, res, next) => {
 
     try {
         const { rows } = await pool.query(queryText, [
-            avoidPolygon, filteredLocation, latitude, longitude, filteredDescription,
+            avoidPolygonValue, filteredLocation, latitude, longitude, filteredDescription,
             status, datetimeOpen, datetimeClosed, datetimePermanent,
             votes || 0, image, categories, filteredQna
         ]);
-        res.status(200).json({
+        res.status(201).json({
             message: "Successfully added indoor issue",
             data: rows[0]
         });

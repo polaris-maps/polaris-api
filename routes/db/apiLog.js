@@ -21,8 +21,12 @@ apiLogRoutes.get("/app/apiLog/all", async (req, res, next) => {
 // Get a single api log record by id
 apiLogRoutes.get("/app/apiLog/:id", async (req, res, next) => {
     try {
-        const { rows } = await pool.query('Select * From ApiLog where api_log_id = id');
-        res.json(rows);
+        const { rows } = await pool.query('SELECT * FROM ApiLog WHERE api_log_id = $1', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).json({ message: 'API log not found' });
+        }
     } catch (error) {
         next(error);
     }

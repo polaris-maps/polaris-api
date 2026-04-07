@@ -56,9 +56,21 @@ userRoutes.route("/app/user/add").post(async (req, res, next) => {
 userRoutes.route("/app/user/update/:id").put(async (req, res, next) => {
     const profileId = req.params.id;
     const updates = req.body;
+
+    // Map API field names to database column names (lowercase)
+    const columnMapping = {
+        'favoriteLocations': 'favoritelocations',
+        'indoorIssueInteractions': 'indoorissueinteractions',
+        'indoorIssuesCreated': 'indoorissuescreated'
+    };
+
     const keys = Object.keys(updates);
     const values = Object.values(updates);
-    const setClause = keys.map((key, index) => `"${key}" = $${index + 2}`).join(', ');
+    // Convert keys to lowercase column names
+    const setClause = keys.map((key, index) => {
+        const columnName = columnMapping[key] || key.toLowerCase();
+        return `"${columnName}" = $${index + 2}`;
+    }).join(', ');
 
     const queryText = `UPDATE Profile SET ${setClause} WHERE profile_id = $1 RETURNING *`;
 
